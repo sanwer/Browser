@@ -22,6 +22,7 @@ public:
 	virtual CControlUI* CreateControl(LPCTSTR pstrClass);
 	void SetAddress(LPCTSTR pstrAddress);
 	void SetTitle(LPCTSTR pstrTitle);
+	void SetLoadingState(bool isLoading,bool canGoBack,bool canGoForward);
 	void Popup(LPCTSTR pstrUrl);
 	void OnPopup();
 	
@@ -34,9 +35,10 @@ protected:
 private:
 	CLabelUI* labTitle;
 	CControlUI* uiToolbar;
+	CButtonUI* btnBackward;
+	CButtonUI* btnForward;
 	CEditUI* editUrl;
-	CButtonUI* btnHome;
-	CButtonUI* btnConfig;
+	CEditUI* editKeyword;
 	CBrowserUI* mBrowser;
 	CDuiString sHomepage;
 	CDuiString m_sUrl;

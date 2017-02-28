@@ -9,8 +9,7 @@
 
 enum client_menu_ids
 {
-	CLIENT_ID_HOMEPAGE = MENU_ID_USER_FIRST,
-	CLIENT_ID_REFRESH,
+	CLIENT_ID_REFRESH = MENU_ID_USER_FIRST,
 	CLIENT_ID_SAMPLE,
 };
 
@@ -19,6 +18,7 @@ CBrowserHandler::CBrowserHandler(CBrowserDlg* pWindow)
 	, m_pWindow(pWindow)
 	, m_BrowserId(0)
 	, m_hParentHandle(NULL)
+	, m_Cookie(NULL)
 {
 	CreateProcessMessageDelegates(m_process_message_delegates);
 	CreateRequestDelegates(m_request_delegates);
@@ -51,16 +51,17 @@ void CBrowserHandler::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser,
 	CefRefPtr<CefMenuModel> model)
 {
 	//model->Clear();//清空上下文菜单项
+
 	if(model->IsVisible(MENU_ID_PRINT))
 		model->Remove(MENU_ID_PRINT);//删除打印菜单
-#ifndef _DEBUG
+
 	if(model->IsVisible(MENU_ID_VIEW_SOURCE))
 		model->Remove(MENU_ID_VIEW_SOURCE);//删除查看源码菜单
-#endif
+
 	//model->AddSeparator();//增加分隔符
-	model->AddItem(CLIENT_ID_HOMEPAGE,	CefString(L"返回首页"));
-	model->AddItem(CLIENT_ID_REFRESH,	CefString(L"刷新页面"));
-	model->AddItem(CLIENT_ID_SAMPLE,	CefString(L"计算机名"));
+
+	model->AddItem(CLIENT_ID_REFRESH,	CefString(L"刷新(&R)"));
+	//model->AddItem(CLIENT_ID_SAMPLE,	CefString(L"计算机名"));
 }
 
 bool CBrowserHandler::OnContextMenuCommand(CefRefPtr<CefBrowser> browser,
@@ -71,9 +72,9 @@ bool CBrowserHandler::OnContextMenuCommand(CefRefPtr<CefBrowser> browser,
 {
 	switch (command_id)
 	{
-	case CLIENT_ID_HOMEPAGE:
-		browser->GetMainFrame()->LoadURL(m_sHomepage);
-		return true;
+	//case CLIENT_ID_HOMEPAGE:
+	//	browser->GetMainFrame()->LoadURL(m_sHomepage);
+	//	return true;
 	case CLIENT_ID_REFRESH:
 		browser->Reload();
 		return true;
@@ -99,6 +100,12 @@ void CBrowserHandler::OnLoadingStateChange(CefRefPtr<CefBrowser> browser,
 	bool canGoBack,
 	bool canGoForward)
 {
+	CEF_REQUIRE_UI_THREAD();
+
+	if (m_BrowserId == browser->GetIdentifier() && m_pWindow != NULL)
+	{
+		m_pWindow->SetLoadingState(isLoading, canGoBack, canGoForward);
+	}
 }
 
 void CBrowserHandler::OnAddressChange(CefRefPtr<CefBrowser> browser,
@@ -108,7 +115,7 @@ void CBrowserHandler::OnAddressChange(CefRefPtr<CefBrowser> browser,
 	CEF_REQUIRE_UI_THREAD();
 
 	if (m_BrowserId == browser->GetIdentifier()
-		&& frame->IsMain() && m_pWindow != NULL)
+		/*&& frame->IsMain()*/ && m_pWindow != NULL)
 	{
 		m_pWindow->SetAddress(std::wstring(url).c_str());
 	}
@@ -258,7 +265,7 @@ void CBrowserHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 }
 
 void CBrowserHandler::OnLoadStart(CefRefPtr<CefBrowser> browser,
-	CefRefPtr<CefFrame> frame)
+	CefRefPtr<CefFrame> frame/*,TransitionType transition_type*/)
 {
 	CEF_REQUIRE_UI_THREAD();
 

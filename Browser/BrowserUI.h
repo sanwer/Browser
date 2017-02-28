@@ -28,6 +28,7 @@ class CBrowserHandler
 	, public CefLifeSpanHandler		// 浏览器生命周期处理
 	, public CefLoadHandler			// 浏览器加载处理
 	, public CefRequestHandler		// 浏览器请求处理
+	, public CefRequestContextHandler
 {
 
 public:
@@ -192,7 +193,8 @@ public:
 	// CefLoadHandler methods
 	virtual void OnLoadStart(
 		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame) OVERRIDE;
+		CefRefPtr<CefFrame> frame/*,
+		TransitionType transition_type*/) OVERRIDE;
 
 	virtual void OnLoadEnd(
 		CefRefPtr<CefBrowser> browser,
@@ -223,7 +225,15 @@ public:
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request) OVERRIDE;
 
-	virtual CefRefPtr<CefCookieManager> GetCookieManager() { return NULL; }
+	//virtual CefRefPtr<CefCookieManager> GetCookieManager() { return NULL; }
+	virtual CefRefPtr<CefCookieManager> GetCookieManager() OVERRIDE {
+		if (m_Cookie)
+		{
+			return m_Cookie;
+		}
+		m_Cookie = CefCookieManager::CreateManager("D:\\Users\\Downloads\\CefCookie", false, NULL);
+		return m_Cookie;
+	}
 
 	virtual void OnProtocolExecution(
 		CefRefPtr<CefBrowser> browser,
@@ -270,6 +280,8 @@ protected:
 
   // Set of Handlers registered with the message router.
   MessageHandlerSet message_handler_set_;
+
+  CefRefPtr<CefCookieManager> m_Cookie;
 
 	// Include the default reference counting implementation.
 	IMPLEMENT_REFCOUNTING(CBrowserHandler);

@@ -82,12 +82,12 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "FileDescription", "À¶É«ÀÖÔ°"
+            VALUE "FileDescription", "Browser"
             VALUE "FileVersion", "1,0,0,1"
             VALUE "InternalName", "Browser"
-            VALUE "LegalCopyright", "Copyright (C) 2015"
+            VALUE "LegalCopyright", "Copyright (C) 2016-2017"
             VALUE "OriginalFilename", "Browser.exe"
-            VALUE "ProductName", "À¶É«ÀÖÔ°"
+            VALUE "ProductName", "Browser"
             VALUE "ProductVersion", "1,0,0,1"
         END
     END
