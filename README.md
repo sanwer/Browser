@@ -1,12 +1,18 @@
-# Browser(CEFä¯ÀÀÆ÷)
-  CEFä¯ÀÀÆ÷ÊÇDuiLib+CEFµÄÑİÊ¾ÓÃµÄ³ÌĞò£¬º¬Flash PPAPI²å¼şÓë»ñÈ¡±¾µØ¼ÆËã»úÃû³ÆµÄÑİÊ¾¡£
-  ![CEFä¯ÀÀÆ÷](https://github.com/sanwer/Browser/blob/master/Demo.png)
+# Browser(CEFæµè§ˆå™¨)
+  CEFæµè§ˆå™¨æ˜¯[Duilib](https://github.com/sanwer/DuiLib)+[CEF3](https://github.com/sanwer/libcef)çš„å¼€æºç¤ºä¾‹ç¨‹åºï¼Œå«Flash PPAPIæ’ä»¶ã€‚
+  ![CEFæµè§ˆå™¨](https://github.com/sanwer/Browser/blob/master/Demo.png)
 
-## DuiLib
-  [Duilib](https://github.com/duilib/duilib)ÊÇÒ»¸öWindowsÏÂÃâ·Ñ¿ªÔ´µÄDirectUI½çÃæ¿â¡£<br />
-  µ±Ç°°æÊÇ[DuiLib_Ultimate](https://github.com/qdtroy/DuiLib_Ultimate)µÄ¶¨ÖÆ°æ£¬Ö÷Òª×öÑİÊ¾ÓÃ£¬²»¶¨Ê±¸üĞÂ¡£
+**ç¼–è¯‘**
+```sh
+Build.cmd
+```
 
-## CEF3(libcef_dll)
-  ÒÑ»Ø¹öÒÔ±ãÖ§³ÖXP¡£<br />
-  CEF Version:      3.2556.1368.g535c4fb<br />
-  Chromium Verison: 48.0.2556.0<br />
+**Cleanup project**
+```sh
+# bfg.jar --delete-files Bin/cef.pak  Browser.git
+# java -jar bfg.jar --strip-blobs-bigger-than 30K Browser.git
+Modify deleted-files.txt
+# cd Browser.git
+# git reflog expire --expire=now --all && git gc --prune=now --aggressive
+
+```

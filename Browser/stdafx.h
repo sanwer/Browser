@@ -1,3 +1,5 @@
+#ifndef _STDAFX_H_
+#define _STDAFX_H_
 #pragma once
 
 #ifndef WINVER
@@ -13,18 +15,9 @@
 #endif
 
 #define WIN32_LEAN_AND_MEAN
+
 #define _CRT_SECURE_NO_DEPRECATE
 
-#include "include/cef_client.h"
-#include "include/cef_app.h"
-
-#include <windows.h>
-#include <objbase.h>
 #include "resource.h"
 
-#include "..\DuiLib\UIlib.h"
-using namespace DuiLib;
-
-#define  DEBUG_MODEL
-
-#define TIEM_LOGINDLG_AUTO 1001
+#endif

@@ -15,23 +15,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Browser.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="BrowserUI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MiniDumper.cpp">
+    <ClCompile Include="BrowserHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BrowserApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="JSHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MainDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Browser.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -41,7 +44,16 @@
     <ClInclude Include="BrowserUI.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MiniDumper.h">
+    <ClInclude Include="BrowserHandler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BrowserApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JSHandler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MainDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

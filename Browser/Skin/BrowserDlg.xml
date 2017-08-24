@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<Window size="1024,730" sizebox="4,4,4,4" caption="0,0,0,30" mininfo="168,30" showshadow="true" shadowsize="2" shadowcolor="0x2F9EED">
+	<Font shared="true" id="0" name="宋体" size="12" bold="false" italic="false" />
+	<Font shared="true" id="1" name="宋体" size="14" bold="false" italic="false" default="true" />
+	<Font shared="true" id="2" name="宋体" size="16" bold="false" italic="false" />
+	<VerticalLayout name="bg" bkcolor="#FF2F9EED" inset="1,0,1,1">
+		<HorizontalLayout name="uiTop" height="30">
+			<Label name="labTitle" text="Browser" textpadding="8,0,8,0" textcolor="#FFFFFFFF" disabledtextcolor="#FFA7A6AA" font="2" />
+			<Button name="minbtn" width="30" height="30" normalimage="file='btnMin.png' source='0,0,30,30'" hotimage="file='btnMin.png' source='30,0,60,30'" pushedimage="file='btnMin.png' source='60,0,90,30'" />
+			<Button name="maxbtn" width="30" height="30" normalimage="file='btnMax.png' source='0,0,30,30'" hotimage="file='btnMax.png' source='30,0,60,30'" pushedimage="file='btnMax.png' source='60,0,90,30'" />
+			<Button name="restorebtn" width="30" height="30" normalimage="file='btnRestore.png' source='0,0,30,30'" hotimage="file='btnRestore.png' source='30,0,60,30'" pushedimage="file='btnRestore.png' source='60,0,90,30'" visible="false" />
+			<Button name="closebtn" width="30" height="30" normalimage="file='btnClose.png' source='0,0,30,30'" hotimage="file='btnClose.png' source='30,0,60,30'" pushedimage="file='btnClose.png' source='60,0,90,30'" />
+		</HorizontalLayout>
+		<HorizontalLayout name="uiToolbar" height="36" inset="0,1,0,5">
+			<Control width="5" />
+			<Button name="btnBackward" width="30" height="30" foreimage="file='btnBackward.png' dest='5,5,25,25'" hotimage="file='btnPushed.png' source='0,0,30,30' dest='0,0,30,30' corner='3,3,3,3'" />
+			<Button name="btnForward" width="30" height="30" foreimage="file='btnForward.png' dest='5,5,25,25'" hotimage="file='btnPushed.png' source='0,0,30,30' dest='0,0,30,30' corner='3,3,3,3'" />
+			<Control width="5" />
+			<Edit name="editUrl" height="30" bkcolor="#FFFFFFFF" textcolor="#FF000000" font="2" />
+			<Button name="btnGoto" width="30" height="30" bkcolor="#FFFFFFFF" normalimage="file='btnGoto.png' source='0,0,20,20' dest='5,5,25,25'" />
+			<Control width="5" />
+			<Edit name="editKeyword" width="186" height="30" bkcolor="#FFFFFFFF" textcolor="#FF000000" font="2" tipvalue="百度搜索" tipvaluecolor="#FFCCCCCC" />
+			<Button name="btnSearch" width="30" height="30" bkcolor="#FFFFFFFF" normalimage="file='btnSearch.png' source='0,0,20,20' dest='5,5,25,25'" />
+			<Control width="5" />
+			<Button name="btnHome" width="30" height="30" foreimage="file='btnHome.png' dest='5,5,25,25'" hotimage="file='btnPushed.png' source='0,0,30,30' dest='0,0,30,30' corner='3,3,3,3'" />
+			<Button name="btnSettings" width="30" height="30" foreimage="file='btnSettings.png' dest='5,5,25,25'" hotimage="file='btnPushed.png' source='0,0,30,30' dest='0,0,30,30' corner='3,3,3,3'" />
+			<Control width="5" />
+		</HorizontalLayout>
+		<BrowserUI name="mBrowser" bkcolor="#FFFFFFFF" />
+	</VerticalLayout>
+</Window>
