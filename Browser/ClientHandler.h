@@ -240,13 +240,6 @@ namespace Browser
 		bool IsOsr() const { return m_IsOsr; }
 
 	private:
-		bool CreatePopupWindow(
-			CefRefPtr<CefBrowser> browser,
-			const CefPopupFeatures& popupFeatures,
-			CefWindowInfo& windowInfo,
-			CefRefPtr<CefClient>& client,
-			CefBrowserSettings& settings);
-
 		// Execute Delegate notifications on the main thread.
 		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);

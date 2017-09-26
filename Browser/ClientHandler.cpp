@@ -253,8 +253,10 @@ namespace Browser
 	{
 		CEF_REQUIRE_IO_THREAD();
 
-		// Return true to cancel the popup window.
-		return !CreatePopupWindow(browser, popupFeatures, windowInfo, client, settings);
+		//BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);
+		//return true;
+
+		return false;
 	}
 
 	void ClientHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
@@ -463,18 +465,6 @@ namespace Browser
 	int ClientHandler::GetBrowserCount() const {
 		CEF_REQUIRE_UI_THREAD();
 		return m_nBrowserCount;
-	}
-
-
-	bool ClientHandler::CreatePopupWindow(
-		CefRefPtr<CefBrowser> browser,
-		const CefPopupFeatures& popupFeatures,
-		CefWindowInfo& windowInfo,
-		CefRefPtr<CefClient>& client,
-		CefBrowserSettings& settings)
-	{
-		BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);
-		return false;
 	}
 
 	void ClientHandler::NotifyBrowserCreated(CefRefPtr<CefBrowser> browser)
