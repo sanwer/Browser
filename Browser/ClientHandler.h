@@ -1,5 +1,5 @@
-#ifndef __BROWSERHANDLER_H__
-#define __BROWSERHANDLER_H__
+#ifndef __BROWSER_HANDLER_H__
+#define __BROWSER_HANDLER_H__
 #pragma once
 #include <set>
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace Browser
 {
-	class CBrowserHandler
+	class ClientHandler
 		: public CefClient				// 浏览器客户区
 		, public CefContextMenuHandler	// 浏览器上下文菜单处理
 		, public CefDisplayHandler		// 浏览器显示处理
@@ -22,26 +22,26 @@ namespace Browser
 		, public CefLifeSpanHandler		// 浏览器生命周期处理
 		, public CefLoadHandler			// 浏览器加载处理
 		, public CefRequestHandler		// 浏览器请求处理
-		, public CefRequestContextHandler
 	{
 	public:
 		class Delegate {
 		public:
-			//virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser) = 0;
-			//virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser) = 0;
-			//virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser) = 0;
+			virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser) = 0;
+			virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser) = 0;
+			virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser) = 0;
 			virtual void OnSetAddress(const std::wstring& url) = 0;
 			virtual void OnSetTitle(const std::wstring& title) = 0;
+			virtual void OnSetFullscreen(bool fullscreen) = 0;
 			virtual void OnSetLoadingState(bool isLoading,bool canGoBack,bool canGoForward) = 0;
-			//virtual void OnSetFullscreen(bool fullscreen) = 0;
-			//virtual void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) = 0;
+			virtual void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) = 0;
+
 		protected:
 			virtual ~Delegate() {}
 		};
 		typedef std::set<CefMessageRouterBrowserSide::Handler*> MessageHandlerSet;
 
 	public:
-		CBrowserHandler(Delegate* delegate,bool is_osr,const std::wstring& startup_url);
+		ClientHandler(Delegate* delegate,bool is_osr,const std::wstring& startup_url);
 		void DetachDelegate();
 
 		//////////////////////////////////////////////////////////////////////////
@@ -226,26 +226,18 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			TerminationStatus status) OVERRIDE;
 
-		//////////////////////////////////////////////////////////////////////////
-		// CefRequestContextHandler methods
-		CefRefPtr<CefCookieManager> GetCookieManager() OVERRIDE {
-			if (m_Cookie)
-			{
-				return m_Cookie;
-			}
-			m_Cookie = CefCookieManager::CreateManager("D:\\Users\\Downloads\\CefCookie", false, NULL);
-			return m_Cookie;
-		}
-
 		// Returns the number of browsers currently using this handler. Can only be
 		// called on the CEF UI thread.
 		int GetBrowserCount() const;
 
 		// Returns the Delegate.
-		Delegate* delegate() const { return delegate_; }
+		Delegate* delegate() const { return m_Delegate; }
 
 		// Returns the startup URL.
-		std::wstring startup_url() const { return startup_url_; }
+		std::wstring StartupUrl() const { return m_StartupUrl; }
+
+		// Returns true if this handler uses off-screen rendering.
+		bool IsOsr() const { return m_IsOsr; }
 
 	private:
 		bool CreatePopupWindow(
@@ -256,51 +248,41 @@ namespace Browser
 			CefBrowserSettings& settings);
 
 		// Execute Delegate notifications on the main thread.
-		//void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
-		//void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);
-		//void NotifyBrowserClosed(CefRefPtr<CefBrowser> browser);
+		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
+		void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);
+		void NotifyBrowserClosed(CefRefPtr<CefBrowser> browser);
 		void NotifyAddress(const CefString& url);
 		void NotifyTitle(const CefString& title);
 		void NotifyFullscreen(bool fullscreen);
 		void NotifyLoadingState(bool isLoading,bool canGoBack,bool canGoForward);
-		//void NotifyDraggableRegions(const std::vector<CefDraggableRegion>& regions);
+		void NotifyDraggableRegions(const std::vector<CefDraggableRegion>& regions);
+
+		// True if this handler uses off-screen rendering.
+		const bool m_IsOsr;
 
 		// The startup URL.
-		const std::wstring startup_url_;
+		std::wstring m_StartupUrl;
 
 		// True if mouse cursor change is disabled.
-		bool mouse_cursor_change_disabled_;
+		bool m_mouse_cursor_change_disabled;
 
 		// Handles the browser side of query routing. The renderer side is handled
 		// in client_renderer.cc.
-		CefRefPtr<CefMessageRouterBrowserSide> message_router_;
+		CefRefPtr<CefMessageRouterBrowserSide> m_message_router;
 
-		Delegate* delegate_;
-
-		// Track state information for the text context menu.
-		struct TestMenuState {
-			TestMenuState() : check_item(true), radio_item(0) {}
-			bool check_item;
-			int radio_item;
-		} test_menu_state_;
+		Delegate* m_Delegate;
 
 		// The current number of browsers using this handler.
-		int browser_count_;
-
-		// Console logging state.
-		const std::string console_log_file_;
-		bool first_console_message_;
+		int m_nBrowserCount;
 
 		// True if an editable field currently has focus.
-		bool focus_on_editable_field_;
+		bool m_bFocusOnEditableField;
 
 		// Set of Handlers registered with the message router.
-		MessageHandlerSet message_handler_set_;
+		MessageHandlerSet m_MessageHandlerSet;
 
-		CefRefPtr<CefCookieManager> m_Cookie;
-
-		IMPLEMENT_REFCOUNTING(CBrowserHandler);
-		//DISALLOW_COPY_AND_ASSIGN(CBrowserHandler);
+		IMPLEMENT_REFCOUNTING(ClientHandler);
+		DISALLOW_COPY_AND_ASSIGN(ClientHandler);
 
 	public:
 		CefRefPtr<CefBrowser> GetBrowser() { return m_Browser; }

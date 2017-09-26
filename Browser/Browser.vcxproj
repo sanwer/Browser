@@ -136,11 +136,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BrowserApp.cpp" />
-    <ClCompile Include="BrowserHandler.cpp" />
+    <ClCompile Include="BrowserManager.cpp" />
     <ClCompile Include="BrowserUI.cpp" />
+    <ClCompile Include="BrowserDlg.cpp" />
+    <ClCompile Include="ClientApp.cpp" />
+    <ClCompile Include="ClientHandler.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="JSHandler.cpp" />
+    <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -149,11 +152,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BrowserApp.h" />
-    <ClInclude Include="BrowserHandler.h" />
+    <ClInclude Include="BrowserManager.h" />
     <ClInclude Include="BrowserUI.h" />
-    <ClInclude Include="MainDlg.h" />
+    <ClInclude Include="BrowserDlg.h" />
+    <ClInclude Include="ClientApp.h" />
+    <ClInclude Include="ClientHandler.h" />
     <ClInclude Include="JSHandler.h" />
+    <ClInclude Include="MessageLoop.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

@@ -6,11 +6,11 @@
 
 namespace Browser
 {
-	class CJSHandler : public CefV8Handler
+	class ClientJSHandler : public CefV8Handler
 	{
 	public:
-		CJSHandler() : sParam("An initial string value.") {}
-		virtual ~CJSHandler() {}
+		ClientJSHandler() : sParam("An initial string value.") {}
+		virtual ~ClientJSHandler() {}
 
 		virtual bool Execute(const CefString& name,
 			CefRefPtr<CefV8Value> object,
@@ -19,7 +19,7 @@ namespace Browser
 			CefString& exception);
 	private:
 		CefString sParam;
-		IMPLEMENT_REFCOUNTING(CJSHandler);
+		IMPLEMENT_REFCOUNTING(ClientJSHandler);
 	};
 }
 

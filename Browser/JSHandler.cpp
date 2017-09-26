@@ -6,7 +6,7 @@
 
 namespace Browser
 {
-	bool CJSHandler::Execute(const CefString& name,
+	bool ClientJSHandler::Execute(const CefString& name,
 		CefRefPtr<CefV8Value> object,
 		const CefV8ValueList& arguments,
 		CefRefPtr<CefV8Value>& retval,
