@@ -67,18 +67,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	scoped_ptr<Browser::MessageLoop> message_loop;
 	message_loop.reset(new Browser::MessageLoop);
 
-	//Browser::BrowserDlg* pFrame = new Browser::BrowserDlg();
-	//if(pFrame == NULL) return 0;
-	//pFrame->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,800,600);
-	//pFrame->CenterWindow();
+	pBrowserManager->CreateRootWindow(true,false,CefRect(),_T("https://www.hao123.com/"));
 
-	pBrowserManager->CreateRootWindow(
-		true,             // Show controls.
-		settings.windowless_rendering_enabled ? true : false,
-		CefRect(),        // Use default system size.
-		std::wstring());   // Use default URL.
-
-	
 	//DuiLib::CPaintManagerUI::MessageLoop();
 	result = message_loop->Run();
 

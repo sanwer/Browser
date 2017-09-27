@@ -99,8 +99,6 @@ namespace Browser
 
 		if (_tcsicmp(msg.sType,DUI_MSGTYPE_WINDOWINIT) == 0)
 		{
-			editUrl->SetText(m_sUrl);
-			LoadURL(m_sUrl.GetData());
 		}
 		else if (_tcsicmp(msg.sType,_T("click")) == 0)
 		{
@@ -179,11 +177,8 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(const std::wstring& url)
 	{
-		if(m_sUrl.CompareNoCase(url.c_str())!=0)
-		{
-			m_sUrl = url.c_str();
-			editUrl->SetText(m_sUrl);
-		}
+		m_sUrl = url.c_str();
+		editUrl->SetText(m_sUrl);
 	}
 
 	void BrowserDlg::OnSetTitle(const std::wstring& title)

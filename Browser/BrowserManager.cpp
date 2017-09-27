@@ -237,6 +237,7 @@ namespace Browser
 		if (m_bAllWindowsClosed && m_BrowserWindowSet.empty()) {
 			// Quit the main message loop after all windows have closed.
 			MessageLoop::Get()->Quit();
+			//PostQuitMessage(0);
 		}
 	}
 }
