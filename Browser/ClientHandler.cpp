@@ -254,8 +254,12 @@ namespace Browser
 		CEF_REQUIRE_IO_THREAD();
 
 		//BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);//Popup
-		browser->GetMainFrame()->LoadURL(target_url);//Main window loading
-		return true; //cancel create
+
+		// Redirect all popup page into the source frame forcefully
+		frame->LoadURL(target_url);
+
+		// Don't allow new window or tab
+		return true;
 	}
 
 	void ClientHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
