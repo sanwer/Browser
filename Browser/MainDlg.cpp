@@ -45,9 +45,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	sBuffer += L"Browser";
 	CefString(&settings.cache_path).FromWString(sBuffer);
 
-	//主程序消息循环true，CEF消息循环false
-	settings.multi_threaded_message_loop=false;
-
 	//忽略掉ssl证书验证错误
 	settings.ignore_certificate_errors = true;
 

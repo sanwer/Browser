@@ -144,7 +144,8 @@ namespace Browser
 
 		//////////////////////////////////////////////////////////////////////////
 		// CefLifeSpanHandler methods
-		virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
+		virtual bool OnBeforePopup(
+			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			const CefString& target_url,
 			const CefString& target_frame_name,
@@ -155,6 +156,7 @@ namespace Browser
 			CefRefPtr<CefClient>& client,
 			CefBrowserSettings& settings,
 			bool* no_javascript_access) OVERRIDE;
+
 		void OnAfterCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		bool DoClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		void OnBeforeClose(CefRefPtr<CefBrowser> browser) OVERRIDE;
@@ -240,6 +242,20 @@ namespace Browser
 		bool IsOsr() const { return m_IsOsr; }
 
 	private:
+		
+		bool CreatePopupWindow(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			const CefString& target_url,
+			const CefString& target_frame_name,
+			cef_window_open_disposition_t target_disposition,
+			bool user_gesture,
+			const CefPopupFeatures& popupFeatures,
+			CefWindowInfo& windowInfo,
+			CefRefPtr<CefClient>& client,
+			CefBrowserSettings& settings,
+			bool* no_javascript_access);
+
 		// Execute Delegate notifications on the main thread.
 		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);
@@ -256,20 +272,14 @@ namespace Browser
 		// The startup URL.
 		std::wstring m_StartupUrl;
 
-		// True if mouse cursor change is disabled.
-		bool m_mouse_cursor_change_disabled;
-
 		// Handles the browser side of query routing. The renderer side is handled
 		// in client_renderer.cc.
-		CefRefPtr<CefMessageRouterBrowserSide> m_message_router;
+		CefRefPtr<CefMessageRouterBrowserSide> m_MessageRouter;
 
 		Delegate* m_Delegate;
 
 		// The current number of browsers using this handler.
 		int m_nBrowserCount;
-
-		// True if an editable field currently has focus.
-		bool m_bFocusOnEditableField;
 
 		// Set of Handlers registered with the message router.
 		MessageHandlerSet m_MessageHandlerSet;
@@ -279,17 +289,10 @@ namespace Browser
 
 	public:
 		CefRefPtr<CefBrowser> GetBrowser() { return m_Browser; }
-		CefRefPtr<CefFrame> GetMainFrame() { return m_Browser.get()?m_Browser->GetMainFrame():NULL; }
-		//HWND GetBrowserHandle() { return m_Browser.get()?m_Browser->GetHost()->GetWindowHandle():NULL; }
-		//void SetParentHandle(CefWindowHandle hParent) { m_hParentHandle = hParent; }
-		//void SetBrowserEvent(IBrowserEvent* pEvent) { m_pEvent = pEvent; }
 		int GetBrowserId() { return m_BrowserId; }
+
 	private:
 		CefRefPtr<CefBrowser> m_Browser;
-		//HWND m_hParentHandle;
-		//IBrowserEvent* m_pEvent;
-
-		// The child browser id
 		int m_BrowserId;
 	};
 }

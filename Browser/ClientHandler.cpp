@@ -24,7 +24,7 @@ namespace Browser
 		m_IsOsr(is_osr),
 		m_StartupUrl(startup_url),
 		m_nBrowserCount(0),
-		m_bFocusOnEditableField(false)
+		m_MessageRouter(NULL)
 	{
 	}
 
@@ -46,7 +46,7 @@ namespace Browser
 		CefRefPtr<CefProcessMessage> message)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		if (m_message_router->OnProcessMessageReceived(browser, source_process,message)) {
+		if (m_MessageRouter->OnProcessMessageReceived(browser, source_process,message)) {
 			return true;
 		}
 
@@ -239,7 +239,8 @@ namespace Browser
 		return false;
 	}
 
-	bool ClientHandler::OnBeforePopup(CefRefPtr<CefBrowser> browser,
+	bool ClientHandler::OnBeforePopup(
+		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		const CefString& target_url,
 		const CefString& target_frame_name,
@@ -253,13 +254,9 @@ namespace Browser
 	{
 		CEF_REQUIRE_IO_THREAD();
 
-		//BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);//Popup
-
-		// Redirect all popup page into the source frame forcefully
-		frame->LoadURL(target_url);
-
-		// Don't allow new window or tab
-		return true;
+		// Return true to cancel the popup window.
+		bool bRet = CreatePopupWindow(browser, frame, target_url, target_frame_name, target_disposition, user_gesture, popupFeatures, windowInfo, client,settings,no_javascript_access);
+		return !bRet;
 	}
 
 	void ClientHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
@@ -268,30 +265,41 @@ namespace Browser
 
 		m_nBrowserCount++;
 
-		if (!m_message_router) {
+		if (!m_MessageRouter) {
 			// Create the browser-side router for query handling.
 			CefMessageRouterConfig config;
-			m_message_router = CefMessageRouterBrowserSide::Create(config);
+			m_MessageRouter = CefMessageRouterBrowserSide::Create(config);
 
 			// Register handlers with the router.
 			//test_runner::CreateMessageHandlers(m_MessageHandlerSet);
 			MessageHandlerSet::const_iterator it = m_MessageHandlerSet.begin();
 			for (; it != m_MessageHandlerSet.end(); ++it)
-				m_message_router->AddHandler(*(it), false);
+				m_MessageRouter->AddHandler(*(it), false);
 		}
 
-		// Disable mouse cursor change if requested via the command-line flag.
-		if (m_mouse_cursor_change_disabled)
-			browser->GetHost()->SetMouseCursorChangeDisabled(true);
-
-		NotifyBrowserCreated(browser);
+		if (!m_Browser)
+		{
+			// We need to keep the main child window, but not popup windows
+			m_Browser = browser;
+			m_BrowserId = browser->GetIdentifier();
+			//if (pQCefWindow_){
+			//	QRect rc = pQCefWindow_->frameGeometry();
+			//	::MoveWindow(browser->GetHost()->GetWindowHandle(), rc.left(), rc.top(), rc.width(), rc.height(), TRUE);
+			//}
+		}
+		
+		if (GetBrowserId() == browser->GetIdentifier()){
+			NotifyBrowserCreated(browser);
+		}
 	}
 
 	bool ClientHandler::DoClose(CefRefPtr<CefBrowser> browser)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		NotifyBrowserClosing(browser);
+		if (GetBrowserId() == browser->GetIdentifier()){
+			NotifyBrowserClosing(browser);
+		}
 
 		// Allow the close. For windowed browsers this will result in the OS close
 		// event being sent.
@@ -302,18 +310,28 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 
+		m_MessageRouter->OnBeforeClose(browser);
+
+		if (GetBrowserId() == browser->GetIdentifier())
+		{
+			// if the main browser is closing, we need to close all the pop up browsers.
+			//CloseAllPopupBrowsers(true);
+
+			// Free the browser pointer so that the browser can be destroyed
+			m_Browser = NULL;
+			NotifyBrowserClosed(browser);
+		}
+
 		if (--m_nBrowserCount == 0) {
 			// Remove and delete message router handlers.
 			MessageHandlerSet::const_iterator it = m_MessageHandlerSet.begin();
 			for (; it != m_MessageHandlerSet.end(); ++it) {
-				m_message_router->RemoveHandler(*(it));
+				m_MessageRouter->RemoveHandler(*(it));
 				delete *(it);
 			}
 			m_MessageHandlerSet.clear();
-			m_message_router = NULL;
+			m_MessageRouter = NULL;
 		}
-
-		NotifyBrowserClosed(browser);
 	}
 
 	void ClientHandler::OnLoadingStateChange(
@@ -385,7 +403,7 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		m_message_router->OnBeforeBrowse(browser, frame);
+		m_MessageRouter->OnBeforeBrowse(browser, frame);
 		return false;
 	}
 
@@ -437,7 +455,7 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		m_message_router->OnRenderProcessTerminated(browser);
+		m_MessageRouter->OnRenderProcessTerminated(browser);
 
 		// Don't reload if there's no start URL, or if the crash URL was specified.
 		if (m_StartupUrl.empty() || m_StartupUrl == L"chrome://crash")
@@ -470,6 +488,34 @@ namespace Browser
 		return m_nBrowserCount;
 	}
 
+	bool ClientHandler::CreatePopupWindow(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		const CefString& target_url,
+		const CefString& target_frame_name,
+		cef_window_open_disposition_t target_disposition,
+		bool user_gesture,
+		const CefPopupFeatures& popupFeatures,
+		CefWindowInfo& windowInfo,
+		CefRefPtr<CefClient>& client,
+		CefBrowserSettings& settings,
+		bool* no_javascript_access)
+	{
+		switch (target_disposition)
+		{
+		case WOD_NEW_FOREGROUND_TAB:
+		case WOD_NEW_BACKGROUND_TAB:
+		case WOD_NEW_POPUP:
+		case WOD_NEW_WINDOW:
+			// Redirect all popup page into the source frame forcefully
+			//frame->LoadURL(target_url);
+			BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);
+			//Don't allow new window or tab
+			return true;
+		}
+		return false;
+	}
+
 	void ClientHandler::NotifyBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
@@ -497,8 +543,7 @@ namespace Browser
 	void ClientHandler::NotifyBrowserClosed(CefRefPtr<CefBrowser> browser) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(
-				base::Bind(&ClientHandler::NotifyBrowserClosed, this, browser));
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyBrowserClosed, this, browser));
 			return;
 		}
 

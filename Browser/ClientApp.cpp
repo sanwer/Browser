@@ -174,21 +174,21 @@ namespace Browser
 		virtual void OnWebKitInitialized(CefRefPtr<ClientAppRenderer> app) OVERRIDE {
 			// Create the renderer-side router for query handling.
 			CefMessageRouterConfig config;
-			m_message_router = CefMessageRouterRendererSide::Create(config);
+			m_MessageRouter = CefMessageRouterRendererSide::Create(config);
 		}
 
 		virtual void OnContextCreated(CefRefPtr<ClientAppRenderer> app,
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			CefRefPtr<CefV8Context> context) OVERRIDE {
-				m_message_router->OnContextCreated(browser,  frame, context);
+				m_MessageRouter->OnContextCreated(browser,  frame, context);
 		}
 
 		virtual void OnContextReleased(CefRefPtr<ClientAppRenderer> app,
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			CefRefPtr<CefV8Context> context) OVERRIDE {
-				m_message_router->OnContextReleased(browser,  frame, context);
+				m_MessageRouter->OnContextReleased(browser,  frame, context);
 		}
 
 		virtual void OnFocusedNodeChanged(CefRefPtr<ClientAppRenderer> app,
@@ -211,7 +211,7 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			CefProcessId source_process,
 			CefRefPtr<CefProcessMessage> message) OVERRIDE {
-				return m_message_router->OnProcessMessageReceived(
+				return m_MessageRouter->OnProcessMessageReceived(
 					browser, source_process, message);
 		}
 
@@ -219,7 +219,7 @@ namespace Browser
 		bool last_node_is_editable_;
 
 		// Handles the renderer side of query routing.
-		CefRefPtr<CefMessageRouterRendererSide> m_message_router;
+		CefRefPtr<CefMessageRouterRendererSide> m_MessageRouter;
 
 		IMPLEMENT_REFCOUNTING(ClientRenderDelegate);
 	};

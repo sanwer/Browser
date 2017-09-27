@@ -88,7 +88,7 @@ namespace Browser
 		DuiLib::CControlUI* pUI = NULL;
 		if (_tcsicmp(pstrClass, _T("BrowserUI")) == 0)
 		{
-			pUI = m_pBrowser = new Browser::BrowserUI();
+			pUI = m_pBrowser = new Browser::BrowserUI(this);
 		}
 		return pUI;
 	}
@@ -296,7 +296,7 @@ namespace Browser
 		// The new popup is initially parented to a temporary window. The native root
 		// window will be created after the browser is created and the popup window
 		// will be re-parented to it at that time.
-		//m_BrowserCtrl->GetPopupConfig(TempWindow::GetWindowHandle(),windowInfo, client, settings);
+		m_BrowserCtrl->GetPopupConfig(TempWindow::GetWindowHandle(),windowInfo, client, settings);
 	}
 
 	CefRefPtr<CefBrowser> BrowserDlg::GetBrowser()
@@ -325,9 +325,7 @@ namespace Browser
 			//MainContext::Get()->PopulateOsrSettings(&settings);
 			//m_BrowserCtrl.reset(new BrowserWindowOsrWin(this, startup_url, settings));
 		} else {
-			if(m_pBrowser){
-				m_BrowserCtrl.reset(m_pBrowser->CreateBrowserCtrl(this, startup_url));
-			}
+			m_BrowserCtrl.reset(new BrowserCtrl(this, startup_url));
 		}
 	}
 
@@ -335,12 +333,12 @@ namespace Browser
 		REQUIRE_MAIN_THREAD();
 
 		int x, y, width, height;
-
+		
 		RECT rcWindow = m_rcBrowser;
+		Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
 		if (::IsRectEmpty(&rcWindow)) {
 			CenterWindow();
 		} else {
-			RECT rcWindow = m_rcBrowser;
 			rcWindow.bottom += 30 + 1;//BrowserHeight + bgInsetHeight
 			rcWindow.right += 2;//BrowserWidth + bgInsetWidth
 			if (m_bWithControls){

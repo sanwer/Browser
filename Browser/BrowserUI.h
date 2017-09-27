@@ -7,6 +7,7 @@
 namespace Browser
 {
 	class BrowserUI;
+	class BrowserDlg;
 
 	class BrowserCtrl : public ClientHandler::Delegate
 	{
@@ -107,15 +108,14 @@ namespace Browser
 	{
 		DECLARE_DUICONTROL(BrowserUI)
 	public:
-		BrowserUI();
+		BrowserUI(BrowserDlg* pParent);
 
 		LPCTSTR GetClass() const;
 		LPVOID GetInterface(LPCTSTR pstrName);
 		void SetPos(RECT rc, bool bNeedInvalidate = true);
-		BrowserCtrl* CreateBrowserCtrl(BrowserCtrl::Delegate* delegate, const std::wstring& startup_url);
 
 	protected:
-		BrowserCtrl* m_pBrowserCtrl;
+		BrowserDlg* m_pParent;
 
 		DISALLOW_COPY_AND_ASSIGN(BrowserUI);
 	};

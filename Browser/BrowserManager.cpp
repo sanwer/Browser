@@ -112,7 +112,7 @@ namespace Browser
 			CefBrowserSettings settings;
 			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
 			if(pDlg){
-				pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
+				//pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
 				pDlg->Init(this, with_controls, with_osr, bounds, settings, url);
 
 				// Store a reference to the root window on the main thread.
@@ -131,7 +131,7 @@ namespace Browser
 		CefBrowserSettings& settings) {
 			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
 			if(pDlg){
-				pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,popupFeatures.x,popupFeatures.y,popupFeatures.width,popupFeatures.height);
+				//pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,popupFeatures.x,popupFeatures.y,popupFeatures.width,popupFeatures.height);
 				pDlg->InitAsPopup(this, with_controls, with_osr, popupFeatures, windowInfo, client, settings);
 
 				// Store a reference to the root window on the main thread.

@@ -2,6 +2,7 @@
 #include <sstream>
 #include <string>
 #include "BrowserUI.h"
+#include "BrowserDlg.h"
 #include "MessageLoop.h"
 
 namespace Browser
@@ -169,8 +170,8 @@ namespace Browser
 			m_Delegate->OnSetDraggableRegions(regions);
 	}
 
-	BrowserUI::BrowserUI()
-		: m_pBrowserCtrl(NULL)
+	BrowserUI::BrowserUI(BrowserDlg* pParent)
+		: m_pParent(pParent)
 	{
 		SetBkColor(0xFFFFFFFF);
 	}
@@ -189,17 +190,12 @@ namespace Browser
 	void BrowserUI::SetPos(RECT rc, bool bNeedInvalidate)
 	{
 		DuiLib::CDuiRect rcPos = rc;
-		if (m_pBrowserCtrl && !rcPos.IsNull()) {
-			CefRefPtr<CefBrowser> browser = m_pBrowserCtrl->GetBrowser();
+		if (m_pParent && !rcPos.IsNull()) {
+			CefRefPtr<CefBrowser> browser = m_pParent->GetBrowser();
 			if (browser) {
 				::SetWindowPos(browser->GetHost()->GetWindowHandle(),NULL, rc.left, rc.top, rc.right - rc.left,rc.bottom - rc.top, SWP_NOZORDER | SWP_NOACTIVATE);
 			}
 		}
 		CControlUI::SetPos(rc, bNeedInvalidate);
-	}
-	
-	BrowserCtrl* BrowserUI::CreateBrowserCtrl(BrowserCtrl::Delegate* delegate, const std::wstring& startup_url)
-	{
-		return m_pBrowserCtrl = new BrowserCtrl(delegate, startup_url);
 	}
 }
