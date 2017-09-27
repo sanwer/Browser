@@ -501,15 +501,14 @@ namespace Browser
 		CefBrowserSettings& settings,
 		bool* no_javascript_access)
 	{
-		switch (target_disposition)
-		{
-		case WOD_NEW_FOREGROUND_TAB:
-		case WOD_NEW_BACKGROUND_TAB:
-		case WOD_NEW_POPUP:
-		case WOD_NEW_WINDOW:
-			// Redirect all popup page into the source frame forcefully
-			//frame->LoadURL(target_url);
-			BrowserManager::Get()->CreateRootWindowAsPopup(true, IsOsr(), popupFeatures, windowInfo, client, settings);
+		// Redirect all popup page into the source frame forcefully
+		//frame->LoadURL(target_url);
+
+		if(target_disposition >= WOD_NEW_FOREGROUND_TAB && target_disposition <= WOD_NEW_WINDOW){
+			bool bWithControls = true;
+			if(target_disposition == WOD_NEW_POPUP)
+				bWithControls = false;
+			BrowserManager::Get()->CreateRootWindowAsPopup(bWithControls, IsOsr(), popupFeatures, windowInfo, client, settings);
 			//Don't allow new window or tab
 			return true;
 		}
