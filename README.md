@@ -1,18 +1,20 @@
 # Browser(CEF浏览器)
-  CEF浏览器是[Duilib](https://github.com/sanwer/DuiLib)+[CEF3](https://github.com/sanwer/libcef)的开源示例程序，含Flash PPAPI插件。
-  ![CEF浏览器](https://github.com/sanwer/Browser/blob/master/Demo.png)
+  基于CEF3与Duilib界面库的开源程序，可使用Flash PPAPI插件。
 
-**编译**
+### 编译
+1、获取Duilib
++ https://github.com/sanwer/duilib.git
++ https://gitee.com/sanwer/duilib.git
+
+2、获取CEF3
++ https://github.com/sanwer/libcef.git
++ https://gitee.com/sanwer/libcef.git
+
+3、获取Browser
++ https://github.com/sanwer/Browser.git
++ https://gitee.com/sanwer/Browser.git
+
+4、编译
 ```sh
 Build.cmd
-```
-
-**Cleanup project**
-```sh
-# bfg.jar --delete-files Bin/cef.pak  Browser.git
-# java -jar bfg.jar --strip-blobs-bigger-than 30K Browser.git
-Modify deleted-files.txt
-# cd Browser.git
-# git reflog expire --expire=now --all && git gc --prune=now --aggressive
-
 ```
