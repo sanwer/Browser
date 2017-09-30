@@ -29,7 +29,8 @@ Echo.
 IF NOT EXIST "%CD%\Bin\cef.pak" (
 pushd "%CD%\Bin\"
 IF NOT EXIST cef_binary_3.2623.1401.gb90a3be.zip (
-wget https://github.com/sanwer/libcef/releases/download/latest/cef_binary_3.2623.1401.gb90a3be.zip
+Rem wget https://github.com/sanwer/libcef/releases/download/latest/cef_binary_3.2623.1401.gb90a3be.zip
+wget http://files.git.oschina.net/group1/M00/01/E7/PaAvDFm7e8CAYvlMBd6DJ5NhPGc663.zip?token=206a44f4482dcf8e9a288468c79a9107&ts=1506732571&attname=cef_binary_3.2623.1401.gb90a3be.zip
 IF "%errorlevel%"=="1" GOTO error
 )
 7z.exe x cef_binary_3.2623.1401.gb90a3be.zip
