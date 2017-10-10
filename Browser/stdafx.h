@@ -19,8 +19,8 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include "resource.h"
+#include "config.h"
 
-//#define USE_MINIBLINK
 #ifdef USE_MINIBLINK
 # pragma comment(lib, "node.lib")
 #else

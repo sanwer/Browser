@@ -5,17 +5,12 @@ SET DEVPATH64=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;
 SET DEVPATH86=C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE;
 SET PATH=%PATH%;%DEVPATH86%;%DEVPATH64%
 SET Action="Prep"
-CHOICE /C PBCE /N /D P /T 3 /M "Build(B) Clean(C) Continue:"
-IF %ERRORLEVEL% LEQ 1 (SET Action="Prep" && GOTO Start)
-IF %ERRORLEVEL% LEQ 2 (SET Action="Build" && GOTO Start)
-IF %ERRORLEVEL% LEQ 3 (SET Action="Clean" && GOTO Start)
-IF %ERRORLEVEL% LEQ 4 (SET Action="END" && GOTO Start)
-
-
-:Start
-Echo %Action%
-IF %Action%=="Clean" GOTO Clean
-IF %Action%=="END" GOTO END
+CHOICE /C PBMCE /N /D P /T 3 /M "Build with CEF(B) Build with miniblink(M) Clean(C) Continue:"
+IF %ERRORLEVEL% LEQ 1 (SET Action="Prep" && GOTO Prep)
+IF %ERRORLEVEL% LEQ 2 (SET Action="BuildC" && GOTO Prep)
+IF %ERRORLEVEL% LEQ 3 (SET Action="BuildM" && GOTO Prep)
+IF %ERRORLEVEL% LEQ 4 (SET Action="Clean" && GOTO Clean)
+IF %ERRORLEVEL% LEQ 5 (SET Action="END" && GOTO END)
 
 
 :Prep
@@ -26,6 +21,13 @@ pushd "%CD%\Browser\Skin\"
 popd popd
 Echo.
 
+
+IF %Action%=="Prep" GOTO END
+IF %Action%=="BuildC" GOTO BuildC
+IF %Action%=="BuildM" GOTO BuildM
+
+
+:BuildC
 IF NOT EXIST "%CD%\Bin\cef.pak" (
 pushd "%CD%\Bin\"
 
@@ -39,37 +41,43 @@ Echo.
 )
 IF NOT EXIST "%CD%\Bin\cef.pak" GOTO error
 
-
-IF %Action%=="Prep" GOTO END
-IF %Action%=="Build" GOTO Build
-
-
-:Build
-Echo Build Release Version
+Echo Build Release Version with CEF
+IF EXIST "%CD%\Browser\config.h" cd .>"%CD%\Browser\config.h"
+IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 DEVENV Browser.sln /build "Release|Win32"
+myproj.csproj
 IF "%ERRORLEVEL%"=="1" GOTO Error
-Echo Build Release Version End
-GOTO Package
-
-
-:Package
 Echo Package
 pushd "%CD%\Bin\"
 IF EXIST Browser.zip DEL /F /Q /S Browser.zip
-7z.exe a Browser.zip Browser.exe locales PepperFlash cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin DuiLib.dll
+7z.exe a Browser.zip Browser.exe locales plugins\pepflashplayer.dll cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin
+popd popd
+GOTO End
+
+
+:BuildM
+Echo Build Release Version with miniblink
+IF EXIST "%CD%\Browser\config.h" cd .>"%CD%\Browser\config.h"
+(Echo #define USE_MINIBLINK)>>"%CD%\Browser\config.h"
+IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
+DEVENV Browser.sln /build "Release|Win32"
+IF "%ERRORLEVEL%"=="1" GOTO Error
+Echo Package
+pushd "%CD%\Bin\"
+IF EXIST Browser_miniblink.zip DEL /F /Q /S Browser_miniblink.zip
+7z.exe a Browser_miniblink.zip Browser.exe node.dll plugins\NPSWF32.dll
 popd popd
 GOTO End
 
 
 :Clean
 Echo Clean Temp File
-DEL /F /Q /S /A *.sdf *.user *.ilk *.ipch
-DEL /F /Q /S /A .\Bin\Browser.exe .\Bin\Browser.pdb .\Bin\Browser_d.exe .\Bin\Browser_d.pdb .\Bin\Browser.zip
+DEL /F /Q /S /A *.sdf *.user *.ilk *.ipch DuiLib*.lib libcef*.lib DuiLib*.pdb libcef*.pdb
+DEL /F /Q /S /A .\Bin\Browser.exe .\Bin\Browser.pdb .\Bin\Browser_d.exe .\Bin\Browser_d.pdb .\Bin\Browser.zip .\Bin\Browser_miniblink.zip
 DEL /F /Q /S /A .\Bin\DuiLib.exe .\Bin\DuiLib.pdb .\Bin\DuiLib_d.dll .\Bin\DuiLib_d.pdb
 IF EXIST .\Bin\Debug RD /S /Q .\Bin\Debug
 IF EXIST .\Bin\Release RD /S /Q .\Bin\Release
 IF EXIST .\Bin\x64 RD /S /Q .\Bin\x64
-IF EXIST .\Lib RD /S /Q .\Lib
 IF EXIST .\ipch RD /S /Q .\ipch
 IF EXIST .vs RD /S /Q .vs
 IF EXIST .\Browser\Skin.zip DEL /F /Q /S .\Browser\Skin.zip
