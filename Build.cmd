@@ -42,7 +42,7 @@ Echo.
 IF NOT EXIST "%CD%\Bin\cef.pak" GOTO error
 
 Echo Build Release Version with CEF
-IF EXIST "%CD%\Browser\config.h" cd .>"%CD%\Browser\config.h"
+(Echo #define USE_CEF)>"%CD%\Browser\config.h"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 DEVENV Browser.sln /build "Release|Win32"
 myproj.csproj
@@ -57,8 +57,7 @@ GOTO End
 
 :BuildM
 Echo Build Release Version with miniblink
-IF EXIST "%CD%\Browser\config.h" cd .>"%CD%\Browser\config.h"
-(Echo #define USE_MINIBLINK)>>"%CD%\Browser\config.h"
+(Echo #define USE_MINIBLINK)>"%CD%\Browser\config.h"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 DEVENV Browser.sln /build "Release|Win32"
 IF "%ERRORLEVEL%"=="1" GOTO Error

@@ -1,1 +1,1 @@
-#define USE_MINIBLINK
+#define USE_CEF
