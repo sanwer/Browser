@@ -20,4 +20,15 @@
 
 #include "resource.h"
 
+//#define USE_MINIBLINK
+#ifdef USE_MINIBLINK
+# pragma comment(lib, "node.lib")
+#else
+# ifdef _DEBUG
+#  pragma comment(lib, "libcef_d.lib")
+# else
+#  pragma comment(lib, "libcef.lib")
+# endif
+#endif
+
 #endif

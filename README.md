@@ -1,5 +1,5 @@
 # Browser(CEF浏览器)
-  基于CEF3与Duilib界面库的开源程序，可使用Flash PPAPI插件。
+  基于CEF3与Duilib界面库的开源程序，可使用Flash PPAPI插件，支持使用Node(MiniBlink)替换CEF。
 
 ### 编译
 1、获取Duilib
