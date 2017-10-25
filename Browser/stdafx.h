@@ -25,6 +25,7 @@
 # pragma comment(lib, "node.lib")
 #else
 # ifdef _DEBUG
+//#  define CEF_USE_SANDBOX
 #  pragma comment(lib, "libcef_d.lib")
 # else
 #  pragma comment(lib, "libcef.lib")

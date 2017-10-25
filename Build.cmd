@@ -28,7 +28,7 @@ IF %Action%=="BuildM" GOTO BuildM
 
 
 :BuildC
-IF NOT EXIST "%CD%\Bin\cef.pak" (
+IF NOT EXIST "%CD%\Bin\libcef.dll" (
 pushd "%CD%\Bin\"
 
 IF NOT EXIST "PaAvDFm7e8CAYvlMBd6DJ5NhPGc663.zip@token=206a44f4482dcf8e9a288468c79a9107" (
@@ -39,7 +39,7 @@ IF "%errorlevel%"=="1" GOTO error
 popd popd
 Echo.
 )
-IF NOT EXIST "%CD%\Bin\cef.pak" GOTO error
+IF NOT EXIST "%CD%\Bin\libcef.dll" GOTO error
 
 Echo Build Release Version with CEF
 (Echo #define USE_CEF)>"%CD%\Browser\config.h"

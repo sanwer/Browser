@@ -4,7 +4,11 @@
 #include <set>
 #include "include/base/cef_scoped_ptr.h"
 #include "include/cef_command_line.h"
+#include "include/cef_sandbox_win.h"
 #include "BrowserDlg.h"
+#ifdef CEF_USE_SANDBOX
+#pragma comment(lib, "cef_sandbox.lib")
+#endif
 
 namespace Browser
 {
@@ -32,6 +36,15 @@ namespace Browser
 
 		// Returns the singleton instance of this object.
 		static BrowserManager* Get();
+
+		// Returns the full path to |file_name|.
+		std::string GetDownloadPath(const std::string& file_name);
+
+		// Returns the main application URL.
+		std::string GetMainURL();
+
+		// Returns the background color.
+		cef_color_t GetBackgroundColor();
 
 		scoped_refptr<BrowserDlg> CreateRootWindow(
 			bool with_controls,

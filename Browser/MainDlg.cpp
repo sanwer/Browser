@@ -19,10 +19,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	
 	CefMainArgs main_args(hInstance);
 	CefRefPtr<CefApp> app;
+	CefSettings settings;// Specify CEF global settings here.
 	void* sandbox_info = NULL;
 #ifdef CEF_USE_SANDBOX
   CefScopedSandboxInfo scoped_sandbox;
   sandbox_info = scoped_sandbox.sandbox_info();
+#else
+	settings.no_sandbox = true;
 #endif
 	//CefRefPtr<Browser::ClientAppBrowser> app(new Browser::ClientAppBrowser);
 	CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
@@ -30,14 +33,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	command_line->InitFromString(::GetCommandLineW());
 	const std::string& process_type = command_line->GetSwitchValue("type");
 
+
+
 	// Execute the secondary process, if any.
 	int exit_code = CefExecuteProcess(main_args, app, sandbox_info);
 	if (exit_code >= 0)
 		return exit_code;
 
-	CefSettings settings;// Specify CEF global settings here.
-
-	//缓存路径设置
 	WCHAR szBuffer[MAX_PATH];
 	::ZeroMemory(&szBuffer, sizeof(szBuffer));
 	GetTempPathW(MAX_PATH,szBuffer);
@@ -45,16 +47,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	sBuffer += L"Browser";
 	CefString(&settings.cache_path).FromWString(sBuffer);
 
-	//忽略掉ssl证书验证错误
 	settings.ignore_certificate_errors = true;
 
 	//settings.command_line_args_disabled = true;
 
-#ifndef CEF_USE_SANDBOX
-	settings.no_sandbox = true;
-#endif
-
-	//本地语言设置
 	CefString(&settings.locale).FromASCII("zh-CN");
 
 	// Initialize CEF.

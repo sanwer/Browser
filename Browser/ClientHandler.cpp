@@ -176,7 +176,7 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 		// Continue the download and show the "Save As" dialog.
-		//callback->Continue(MainContext::Get()->GetDownloadPath(suggested_name), true);
+		callback->Continue(BrowserManager::Get()->GetDownloadPath(suggested_name), true);
 	}
 
 	void ClientHandler::OnDownloadUpdated(CefRefPtr<CefBrowser> browser,
