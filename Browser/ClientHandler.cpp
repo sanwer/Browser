@@ -407,6 +407,18 @@ namespace Browser
 		return false;
 	}
 
+	cef_return_value_t ClientHandler::OnBeforeResourceLoad(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefRefPtr<CefRequest> request,
+		CefRefPtr<CefRequestCallback> callback)
+	{
+		//OutputDebugStringW(request->GetURL().c_str());
+		//https://easylist-downloads.adblockplus.org/easylistchina.txt
+		//ÕýÔò¹ýÂË
+		return RV_CONTINUE;
+	}
+
 	bool ClientHandler::OnOpenURLFromTab(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,

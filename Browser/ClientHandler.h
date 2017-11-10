@@ -195,11 +195,11 @@ namespace Browser
 			const CefString& target_url,
 			CefRequestHandler::WindowOpenDisposition target_disposition,
 			bool user_gesture) OVERRIDE;
-		//ReturnValue OnBeforeResourceLoad(
-		//	CefRefPtr<CefBrowser> browser,
-		//	CefRefPtr<CefFrame> frame,
-		//	CefRefPtr<CefRequest> request,
-		//	CefRefPtr<CefRequestCallback> callback) OVERRIDE;
+		cef_return_value_t OnBeforeResourceLoad(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefRequest> request,
+			CefRefPtr<CefRequestCallback> callback) OVERRIDE;
 		//CefRefPtr<CefResourceHandler> GetResourceHandler(
 		//	CefRefPtr<CefBrowser> browser,
 		//	CefRefPtr<CefFrame> frame,
