@@ -44,7 +44,7 @@ namespace Browser
 		void NotifyDestroyedIfDone();
 
 	private:
-		DuiLib::CLabelUI* labTitle;
+		Browser::TitleUI* tabTitle1;
 		DuiLib::CControlUI* uiToolbar;
 		DuiLib::CButtonUI* btnBackward;
 		DuiLib::CButtonUI* btnForward;

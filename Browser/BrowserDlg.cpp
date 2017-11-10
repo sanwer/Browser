@@ -15,7 +15,7 @@ namespace Browser
 		m_bWindowDestroyed(false),
 		m_bBrowserDestroyed(false)
 	{
-		labTitle = NULL;
+		tabTitle1 = NULL;
 		uiToolbar = NULL;
 		btnBackward = NULL;
 		btnForward = NULL;
@@ -40,13 +40,13 @@ namespace Browser
 	void BrowserDlg::InitWindow()
 	{
 		SetIcon(IDR_MAINFRAME);
-		labTitle = static_cast<DuiLib::CLabelUI*>(m_Manager.FindControl(_T("labTitle")));
+		tabTitle1 = static_cast<Browser::TitleUI*>(m_Manager.FindControl(_T("tabTitle1")));
 		uiToolbar = static_cast<DuiLib::CControlUI*>(m_Manager.FindControl(_T("uiToolbar")));
 		btnBackward = static_cast<DuiLib::CButtonUI*>(m_Manager.FindControl(_T("btnBackward")));
 		btnForward = static_cast<DuiLib::CButtonUI*>(m_Manager.FindControl(_T("btnForward")));
 		editUrl = static_cast<DuiLib::CEditUI*>(m_Manager.FindControl(_T("editUrl")));
 		editKeyword = static_cast<DuiLib::CEditUI*>(m_Manager.FindControl(_T("editKeyword")));
-		if (labTitle == NULL || uiToolbar == NULL || editUrl == NULL || editKeyword == NULL)
+		if (tabTitle1 == NULL || uiToolbar == NULL || editUrl == NULL || editKeyword == NULL)
 		{
 			MessageBox(NULL,_T("加载资源文件失败"),_T("Browser"),MB_OK|MB_ICONERROR);
 			return;
@@ -90,6 +90,11 @@ namespace Browser
 		{
 			pUI = m_pBrowser = new Browser::BrowserUI(this);
 		}
+		else if (_tcsicmp(pstrClass, _T("Title")) == 0)
+		{
+			pUI = new Browser::TitleUI();
+		}
+			
 		return pUI;
 	}
 
@@ -183,7 +188,7 @@ namespace Browser
 
 	void BrowserDlg::OnSetTitle(const std::wstring& title)
 	{
-		labTitle->SetText(title.c_str());
+		tabTitle1->SetText(title.c_str());
 		SetWindowText(m_hWnd, title.c_str());
 	}
 
