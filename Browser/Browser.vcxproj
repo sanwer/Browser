@@ -75,6 +75,9 @@
     <PreBuildEvent>
       <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>DEL Skin.zip</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
