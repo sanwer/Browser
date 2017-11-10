@@ -33,8 +33,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	command_line->InitFromString(::GetCommandLineW());
 	const std::string& process_type = command_line->GetSwitchValue("type");
 
-
-
 	// Execute the secondary process, if any.
 	int exit_code = CefExecuteProcess(main_args, app, sandbox_info);
 	if (exit_code >= 0)
@@ -52,6 +50,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	//settings.command_line_args_disabled = true;
 
 	CefString(&settings.locale).FromASCII("zh-CN");
+
+#ifndef _DEBUG
+	settings.log_severity = LOGSEVERITY_DISABLE;
+#endif
 
 	// Initialize CEF.
 	CefInitialize(main_args, settings, app, sandbox_info);
