@@ -11,10 +11,6 @@
 					<Control />
 					<Button name="tabClose1" width="26" height="28" floatalign="right" normalimage="file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'" hotimage="file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'" pushedimage="file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'" />
 				</Title>
-				<Title name="tabTitle2" height="30" minwidth="100" maxwidth="256" borderround="2,2" bkcolor="FF1587D8" selectedbkcolor="FF3498DB" textcolor="FFFFFFFF" selectedtextcolor="FFFFFFFF" group="Titles">
-					<Control />
-					<Button name="tabClose2" width="26" height="28" floatalign="right" normalimage="file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'" hotimage="file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'" pushedimage="file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'" />
-				</Title>
 				<Button name="tabNew" width="30" height="30" normalimage="file='btnTabNew.png' source='0,0,28,18' dest='0,5,28,23'" hotimage="file='btnTabNew.png' source='28,0,56,18' dest='0,5,28,23'" pushedimage="file='btnTabNew.png' source='56,0,84,18' dest='0,5,28,23'" />
 			</HorizontalLayout>
 			<Button name="minbtn" width="30" height="30" normalimage="file='btnMin.png' source='0,0,30,30'" hotimage="file='btnMin.png' source='30,0,60,30'" pushedimage="file='btnMin.png' source='60,0,90,30'" />
@@ -24,17 +20,19 @@
 		</HorizontalLayout>
 		<HorizontalLayout name="uiToolbar" bkcolor="FF3498DB" height="28" inset="0,2,0,2" borderround="2,2">
 			<Control width="2" />
-			<Button name="btnBackward" width="24" height="24" foreimage="file='btnBackward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
-			<Button name="btnForward" width="24" height="24" foreimage="file='btnForward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
+			<Button name="btnBackward" width="24" height="24" borderround="2,2" foreimage="file='btnBackward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
+			<Button name="btnForward" width="24" height="24" borderround="2,2" foreimage="file='btnForward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
 			<Control width="2" />
-			<Edit name="editUrl" height="24" bkcolor="FFFFFFFF" textcolor="FF000000" font="2" />
-			<Button name="btnGoto" width="24" height="24" bkcolor="FFFFFFFF" normalimage="file='btnGoto.png' source='0,0,20,20' dest='2,2,22,22'" />
+			<HorizontalLayout bkcolor="FFFFFFFF" height="24" borderround="2,2">
+				<Edit name="editUrl" height="24" textcolor="FF000000" font="2" />
+				<Button name="btnGoto" width="24" height="24" normalimage="file='btnGoto.png' source='0,0,20,20' dest='2,2,22,22'" />
+			</HorizontalLayout>
 			<Control width="2" />
-			<Edit name="editKeyword" width="186" height="24" bkcolor="FFFFFFFF" textcolor="FF000000" font="2" tipvalue="百度搜索" tipvaluecolor="FFCCCCCC" />
-			<Button name="btnSearch" width="24" height="24" bkcolor="FFFFFFFF" normalimage="file='btnSearch.png' source='0,0,20,20' dest='2,2,22,22'" />
+			<Edit name="editKeyword" width="186" height="24" borderround="2,2" bkcolor="FFFFFFFF" textcolor="FF000000" font="2" tipvalue="百度搜索" tipvaluecolor="FFCCCCCC" />
+			<Button name="btnSearch" width="24" height="24" borderround="2,2" bkcolor="FFFFFFFF" normalimage="file='btnSearch.png' source='0,0,20,20' dest='2,2,22,22'" />
 			<Control width="2" />
-			<Button name="btnHome" width="24" height="24" foreimage="file='btnHome.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
-			<Button name="btnSettings" width="24" height="24" foreimage="file='btnSettings.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
+			<Button name="btnHome" width="24" height="24" borderround="2,2" foreimage="file='btnHome.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
+			<Button name="btnSettings" width="24" height="24" borderround="2,2" foreimage="file='btnSettings.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
 			<Control width="2" />
 		</HorizontalLayout>
 		<BrowserUI name="mBrowser" bkcolor="FFFFFFFF" />
