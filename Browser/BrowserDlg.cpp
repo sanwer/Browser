@@ -21,8 +21,6 @@ namespace Browser
 		btnForward = NULL;
 		editUrl = NULL;
 		editKeyword = NULL;
-		sHomepage = _T("https://www.hao123.com/");
-		m_sUrl = sHomepage;
 	}
 
 	BrowserDlg::~BrowserDlg()
@@ -117,8 +115,8 @@ namespace Browser
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
 			}else if (_tcsicmp(sCtrlName,_T("btnHome")) == 0){//ึ๗าณ
-				editUrl->SetText(sHomepage);
-				LoadURL(sHomepage.GetData());
+				editUrl->SetText(BrowserManager::Get()->GetHomepage().c_str());
+				LoadURL(BrowserManager::Get()->GetHomepage().c_str());
 			}else if (_tcsicmp(sCtrlName,_T("btnSettings")) == 0){
 				DuiLib::CDuiString sUrl = _T("http://fm.baidu.com");//about:settings
 				editUrl->SetText(sUrl);
@@ -182,8 +180,7 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(const std::wstring& url)
 	{
-		m_sUrl = url.c_str();
-		editUrl->SetText(m_sUrl);
+		editUrl->SetText(url.c_str());
 	}
 
 	void BrowserDlg::OnSetTitle(const std::wstring& title)

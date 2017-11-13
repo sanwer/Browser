@@ -37,11 +37,13 @@ namespace Browser
 		// Returns the singleton instance of this object.
 		static BrowserManager* Get();
 
+		std::wstring GetHomepage(){return sHomepage;};
+
 		// Returns the full path to |file_name|.
 		std::string GetDownloadPath(const std::string& file_name);
 
 		// Returns the main application URL.
-		std::string GetMainURL();
+		std::string GetMainUrl();
 
 		// Returns the background color.
 		cef_color_t GetBackgroundColor();
@@ -49,8 +51,7 @@ namespace Browser
 		scoped_refptr<BrowserDlg> CreateRootWindow(
 			bool with_controls,
 			bool with_osr,
-			const CefRect& bounds,
-			const std::wstring& url);
+			const CefRect& bounds);
 
 		scoped_refptr<BrowserDlg> CreateRootWindowAsPopup(
 			bool with_controls,
@@ -93,6 +94,8 @@ namespace Browser
 		TempWindow m_TempWindow;
 
 		CefRefPtr<CefRequestContext> m_SharedRequestContext;
+
+		std::wstring sHomepage;
 
 		DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 	};

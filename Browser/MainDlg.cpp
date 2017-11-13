@@ -62,7 +62,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	scoped_ptr<Browser::MessageLoop> message_loop;
 	message_loop.reset(new Browser::MessageLoop);
 
-	pBrowserManager->CreateRootWindow(true,false,CefRect(),_T("https://www.hao123.com/"));
+	pBrowserManager->CreateRootWindow(true,false,CefRect());
 
 	//DuiLib::CPaintManagerUI::MessageLoop();
 	result = message_loop->Run();
