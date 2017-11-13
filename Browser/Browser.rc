@@ -81,7 +81,7 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "FileDescription", "Browser"
+            VALUE "FileDescription", "https://github.com/sanwer/Browser"
             VALUE "FileVersion", "1,0,0,1"
             VALUE "InternalName", "Browser"
             VALUE "LegalCopyright", "Copyright (C) 2016-2017"
