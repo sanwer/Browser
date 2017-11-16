@@ -12,7 +12,7 @@ namespace Browser
 	public:
 		class Delegate {
 		public:
-			virtual CefRefPtr<CefRequestContext> GetRequestContext(BrowserDlg* pDlg) = 0;
+			virtual CefRefPtr<CefRequestContext> GetRequestContext() = 0;
 			virtual void OnExit(BrowserDlg* pDlg) = 0;
 			virtual void OnRootWindowDestroyed(BrowserDlg* pDlg) = 0;
 		protected:
@@ -28,6 +28,7 @@ namespace Browser
 		virtual DuiLib::CDuiString GetSkinFile();
 		virtual LRESULT ResponseDefaultKeyEvent(WPARAM wParam);
 		virtual DuiLib::CControlUI* CreateControl(LPCTSTR pstrClass);
+		LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
 		void Notify(DuiLib::TNotifyUI& msg);
@@ -35,16 +36,19 @@ namespace Browser
 	private:
 		// BrowserWindow::Delegate methods.
 		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnBrowserWindowDestroyed() OVERRIDE;
-		void OnSetAddress(const std::wstring& url) OVERRIDE;
-		void OnSetTitle(const std::wstring& title) OVERRIDE;
-		void OnSetFullscreen(bool fullscreen) OVERRIDE;
-		void OnSetLoadingState(bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
-		void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) OVERRIDE;
+		void OnBrowserClosed(CefRefPtr<CefBrowser> browser) OVERRIDE;
+		void OnBrowserExit(CefRefPtr<CefBrowser> browser) OVERRIDE;
+		void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) OVERRIDE;
+		void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) OVERRIDE;
+		void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) OVERRIDE;
+		void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
+		void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) OVERRIDE;
+		void OnNewPage(const std::wstring& url) OVERRIDE;
 		void NotifyDestroyedIfDone();
 
 	private:
-		Browser::TitleUI* tabTitle1;
+		DuiLib::CHorizontalLayoutUI* uiTabs;
+		DuiLib::CButtonUI* tabNew;
 		DuiLib::CControlUI* uiToolbar;
 		DuiLib::CButtonUI* btnBackward;
 		DuiLib::CButtonUI* btnForward;
@@ -54,17 +58,11 @@ namespace Browser
 
 	public:
 		// BrowserDlg methods.
-		void Init(
-			BrowserDlg::Delegate* delegate,
-			bool with_controls,
-			bool with_osr,
-			const CefRect& bounds,
-			const CefBrowserSettings& settings,
-			const std::wstring& url);
+		void Init(BrowserDlg::Delegate* delegate,const std::wstring& url);
 		void InitAsPopup(
 			BrowserDlg::Delegate* delegate,
 			bool with_controls,
-			bool with_osr,
+			const CefString& target_url,
 			const CefPopupFeatures& popupFeatures,
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
@@ -73,8 +71,7 @@ namespace Browser
 		void LoadURL(const CefString& url);
 
 	private:
-		void CreateBrowserCtrl(const std::wstring& startup_url);
-		void CreateBrowserWindow(const CefBrowserSettings& settings);
+		void CreateBrowserWindow(CefRefPtr<CefBrowser> browser, const CefBrowserSettings& settings);
 
 		bool m_bWithControls;
 		RECT m_rcBrowser;
@@ -83,8 +80,8 @@ namespace Browser
 		bool m_bInitialized;
 		bool m_bWindowDestroyed;
 		bool m_bBrowserDestroyed;
+		int m_nBrowserSelectedId;
 		Browser::BrowserUI* m_pBrowser;
-		CefRefPtr<CefBrowser> m_Browser;
 		BrowserDlg::Delegate* m_Delegate;
 		scoped_ptr<Browser::BrowserCtrl> m_BrowserCtrl;
 	};

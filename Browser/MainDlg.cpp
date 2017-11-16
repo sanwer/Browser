@@ -54,6 +54,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 #ifndef _DEBUG
 	settings.log_severity = LOGSEVERITY_DISABLE;
 #endif
+	//settings.multi_threaded_message_loop = true;
 
 	// Initialize CEF.
 	CefInitialize(main_args, settings, app, sandbox_info);
@@ -62,7 +63,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	scoped_ptr<Browser::MessageLoop> message_loop;
 	message_loop.reset(new Browser::MessageLoop);
 
-	pBrowserManager->CreateRootWindow(true,false,CefRect());
+	pBrowserManager->CreateRootWindow();
 
 	//DuiLib::CPaintManagerUI::MessageLoop();
 	result = message_loop->Run();

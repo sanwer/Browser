@@ -121,34 +121,29 @@ namespace Browser
 		return path;
 	}
 
-	scoped_refptr<BrowserDlg> BrowserManager::CreateRootWindow(
-		bool with_controls,
-		bool with_osr,
-		const CefRect& bounds) {
-			CefBrowserSettings settings;
-			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
-			if(pDlg){
-				//pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
-				pDlg->Init(this, with_controls, with_osr, bounds, settings, GetHomepage());
+	scoped_refptr<BrowserDlg> BrowserManager::CreateRootWindow()
+	{
+		scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
+		if(pDlg){
+			pDlg->Init(this, GetHomepage());
 
-				// Store a reference to the root window on the main thread.
-				OnRootWindowCreated(pDlg);
-			}
+			// Store a reference to the root window on the main thread.
+			OnRootWindowCreated(pDlg);
+		}
 
-			return pDlg;
+		return pDlg;
 	}
 
 	scoped_refptr<BrowserDlg> BrowserManager::CreateRootWindowAsPopup(
 		bool with_controls,
-		bool with_osr,
+		const CefString& target_url,
 		const CefPopupFeatures& popupFeatures,
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
 		CefBrowserSettings& settings) {
 			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
 			if(pDlg){
-				//pDlg->Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,popupFeatures.x,popupFeatures.y,popupFeatures.width,popupFeatures.height);
-				pDlg->InitAsPopup(this, with_controls, with_osr, popupFeatures, windowInfo, client, settings);
+				pDlg->InitAsPopup(this, with_controls, target_url, popupFeatures, windowInfo, client, settings);
 
 				// Store a reference to the root window on the main thread.
 				OnRootWindowCreated(pDlg);
@@ -200,7 +195,7 @@ namespace Browser
 			m_BrowserWindowSet.insert(pDlg);
 	}
 
-	CefRefPtr<CefRequestContext> BrowserManager::GetRequestContext(BrowserDlg* pDlg)
+	CefRefPtr<CefRequestContext> BrowserManager::GetRequestContext()
 	{
 		REQUIRE_MAIN_THREAD();
 

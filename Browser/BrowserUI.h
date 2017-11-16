@@ -16,12 +16,14 @@ namespace Browser
 		class Delegate {
 		public:
 			virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser) = 0;
-			virtual void OnBrowserWindowDestroyed() = 0;
-			virtual void OnSetAddress(const std::wstring& url) = 0;
-			virtual void OnSetTitle(const std::wstring& title) = 0;
-			virtual void OnSetFullscreen(bool fullscreen) = 0;
-			virtual void OnSetLoadingState(bool isLoading,bool canGoBack,bool canGoForward) = 0;
-			virtual void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) = 0;
+			virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser) = 0;
+			virtual void OnBrowserExit(CefRefPtr<CefBrowser> browser) = 0;
+			virtual void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) = 0;
+			virtual void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) = 0;
+			virtual void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) = 0;
+			virtual void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) = 0;
+			virtual void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) = 0;
+			virtual void OnNewPage(const std::wstring& url) = 0;
 
 		protected:
 			virtual ~Delegate() {}
@@ -29,12 +31,13 @@ namespace Browser
 
 		// Constructor may be called on any thread.
 		// |delegate| must outlive this object.
-		explicit BrowserCtrl(Delegate* delegate, const std::wstring& startup_url);
+		explicit BrowserCtrl(Delegate* delegate);
 
 
 		// Create a new browser and native window.
 		virtual void CreateBrowser(
 			CefWindowHandle parent_handle,
+			const std::wstring& url,
 			const CefRect& rect,
 			const CefBrowserSettings& settings,
 			CefRefPtr<CefRequestContext> request_context);
@@ -51,36 +54,19 @@ namespace Browser
 			CefBrowserSettings& settings);
 
 		// Show the popup window with correct parent and bounds in parent coordinates.
-		virtual void ShowPopup(CefWindowHandle parent_handle, int x, int y, size_t width, size_t height);
+		virtual void ShowPopup(CefRefPtr<CefBrowser> browser, CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height);
 
 		// Show the window.
-		virtual void Show();
-
-		// Hide the window.
-		virtual void Hide();
-
-		// Set the window bounds in parent coordinates.
-		virtual void SetBounds(int x, int y, size_t width, size_t height);
+		virtual void Show(int nBrowserId, int x, int y, size_t width, size_t height);
 
 		// Set focus to the window.
-		virtual void SetFocus(bool focus);
-
-		// Set the device scale factor. Only used in combination with off-screen
-		// rendering.
-		virtual void SetDeviceScaleFactor(float device_scale_factor);
-
-		// Returns the device scale factor. Only used in combination with off-screen
-		// rendering.
-		virtual float GetDeviceScaleFactor() const;
+		virtual void SetFocus(int nBrowserId, bool focus);
 
 		// Returns the window handle.
-		virtual CefWindowHandle GetWindowHandle() const;
+		virtual CefWindowHandle GetWindowHandle(int nBrowserId) const;
 
 		// Returns the browser owned by the window.
-		CefRefPtr<CefBrowser> GetBrowser() const;
-
-		// Returns true if the browser is closing.
-		bool IsClosing() const;
+		CefRefPtr<CefBrowser> GetBrowser(int nBrowserId) const;
 
 	protected:
 		// Allow deletion via scoped_ptr only.
@@ -90,16 +76,15 @@ namespace Browser
 		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		void OnBrowserClosing(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		void OnBrowserClosed(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnSetAddress(const std::wstring& url) OVERRIDE;
-		void OnSetTitle(const std::wstring& title) OVERRIDE;
-		void OnSetFullscreen(bool fullscreen) OVERRIDE;
-		void OnSetLoadingState(bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
-		void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) OVERRIDE;
+		void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) OVERRIDE;
+		void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) OVERRIDE;
+		void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) OVERRIDE;
+		void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
+		void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) OVERRIDE;
+		void OnNewPage(const std::wstring& url) OVERRIDE;
 
 		Delegate* m_Delegate;
-		CefRefPtr<CefBrowser> m_Browser;
 		CefRefPtr<ClientHandler> m_ClientHandler;
-		bool m_IsClosing;
 
 	private:
 		DISALLOW_COPY_AND_ASSIGN(BrowserCtrl);
@@ -109,14 +94,22 @@ namespace Browser
 	{
 		DECLARE_DUICONTROL(BrowserUI)
 	public:
-		BrowserUI(BrowserDlg* pParent);
+		BrowserUI(BrowserDlg* pParent, HWND hParentWnd);
 
 		LPCTSTR GetClass() const;
 		LPVOID GetInterface(LPCTSTR pstrName);
 		void SetPos(RECT rc, bool bNeedInvalidate = true);
+		void SetCtrl(BrowserCtrl* pCtrl);
+		void NewPage(const std::wstring& url, bool bPopup = false);
+		void ShowPage(int nBrowserId);
+		void DelPage(int nBrowserId);
+		CefRefPtr<CefBrowser> GetBrowser() const;
 
 	protected:
+		HWND m_hParentWnd;
 		BrowserDlg* m_pParent;
+		BrowserCtrl* m_pCtrl;
+		int m_nSelectedId;
 
 		DISALLOW_COPY_AND_ASSIGN(BrowserUI);
 	};

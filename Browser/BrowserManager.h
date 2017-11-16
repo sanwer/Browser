@@ -48,14 +48,11 @@ namespace Browser
 		// Returns the background color.
 		cef_color_t GetBackgroundColor();
 
-		scoped_refptr<BrowserDlg> CreateRootWindow(
-			bool with_controls,
-			bool with_osr,
-			const CefRect& bounds);
+		scoped_refptr<BrowserDlg> CreateRootWindow();
 
 		scoped_refptr<BrowserDlg> CreateRootWindowAsPopup(
 			bool with_controls,
-			bool with_osr,
+			const CefString& target_url,
 			const CefPopupFeatures& popupFeatures,
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
@@ -69,6 +66,11 @@ namespace Browser
 		// be executed.
 		void CloseAllWindows(bool force);
 
+		// BrowserDlg::Delegate methods.
+		CefRefPtr<CefRequestContext> GetRequestContext() OVERRIDE;
+		void OnExit(BrowserDlg* pDlg) OVERRIDE;
+		void OnRootWindowDestroyed(BrowserDlg* pDlg) OVERRIDE;
+
 	private:
 		// Allow deletion via scoped_ptr only.
 		friend struct base::DefaultDeleter<BrowserManager>;
@@ -76,11 +78,6 @@ namespace Browser
 		~BrowserManager();
 
 		void OnRootWindowCreated(scoped_refptr<BrowserDlg> pDlg);
-
-		// BrowserDlg::Delegate methods.
-		CefRefPtr<CefRequestContext> GetRequestContext(BrowserDlg* pDlg) OVERRIDE;
-		void OnExit(BrowserDlg* pDlg) OVERRIDE;
-		void OnRootWindowDestroyed(BrowserDlg* pDlg) OVERRIDE;
 
 		const bool m_bAllWindowsClosed;
 		bool m_bRequestContextPerBrowser;

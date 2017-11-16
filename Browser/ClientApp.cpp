@@ -21,6 +21,9 @@ namespace Browser
 			// 但是使用sandbox的话，不允许使用另外的子进程;不使用sandbox的话，第一次加载flash插件时会弹出个命令提示行，这是cef的bug。flash与子进程二者不可兼得
 			//command_line->AppendSwitchWithValue("browser-subprocess-path", "render.exe");
 
+			//单进程模式
+			//command_line->AppendSwitch("single-process");
+
 #ifndef USE_MINIBLINK
 			command_line->AppendSwitchWithValue("ppapi-flash-version", "20.0.0.228");
 			command_line->AppendSwitchWithValue("ppapi-flash-path", "plugins\\pepflashplayer.dll");

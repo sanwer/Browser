@@ -24,16 +24,18 @@ namespace Browser
 		, public CefRequestHandler		// ‰Ø¿¿∆˜«Î«Û¥¶¿Ì
 	{
 	public:
+		friend class BrowserCtrl;
 		class Delegate {
 		public:
 			virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser) = 0;
 			virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser) = 0;
 			virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser) = 0;
-			virtual void OnSetAddress(const std::wstring& url) = 0;
-			virtual void OnSetTitle(const std::wstring& title) = 0;
-			virtual void OnSetFullscreen(bool fullscreen) = 0;
-			virtual void OnSetLoadingState(bool isLoading,bool canGoBack,bool canGoForward) = 0;
-			virtual void OnSetDraggableRegions(const std::vector<CefDraggableRegion>& regions) = 0;
+			virtual void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) = 0;
+			virtual void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) = 0;
+			virtual void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) = 0;
+			virtual void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) = 0;
+			virtual void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) = 0;
+			virtual void OnNewPage(const std::wstring& url) = 0;
 
 		protected:
 			virtual ~Delegate() {}
@@ -41,7 +43,7 @@ namespace Browser
 		typedef std::set<CefMessageRouterBrowserSide::Handler*> MessageHandlerSet;
 
 	public:
-		ClientHandler(Delegate* delegate,bool is_osr,const std::wstring& startup_url);
+		ClientHandler(Delegate* delegate);
 		void DetachDelegate();
 
 		//////////////////////////////////////////////////////////////////////////
@@ -228,21 +230,10 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			TerminationStatus status) OVERRIDE;
 
-		// Returns the number of browsers currently using this handler. Can only be
-		// called on the CEF UI thread.
-		int GetBrowserCount() const;
-
 		// Returns the Delegate.
 		Delegate* delegate() const { return m_Delegate; }
 
-		// Returns the startup URL.
-		std::wstring StartupUrl() const { return m_StartupUrl; }
-
-		// Returns true if this handler uses off-screen rendering.
-		bool IsOsr() const { return m_IsOsr; }
-
 	private:
-		
 		bool CreatePopupWindow(
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
@@ -260,40 +251,27 @@ namespace Browser
 		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosed(CefRefPtr<CefBrowser> browser);
-		void NotifyAddress(const CefString& url);
-		void NotifyTitle(const CefString& title);
-		void NotifyFullscreen(bool fullscreen);
-		void NotifyLoadingState(bool isLoading,bool canGoBack,bool canGoForward);
-		void NotifyDraggableRegions(const std::vector<CefDraggableRegion>& regions);
+		void NotifyAddress(CefRefPtr<CefBrowser> browser, const CefString& url);
+		void NotifyTitle(CefRefPtr<CefBrowser> browser, const CefString& title);
+		void NotifyFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen);
+		void NotifyLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward);
+		void NotifyDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions);
+		void NotifyNewTab(CefRefPtr<CefBrowser> browser, const CefString& url);
 
-		// True if this handler uses off-screen rendering.
-		const bool m_IsOsr;
-
-		// The startup URL.
-		std::wstring m_StartupUrl;
+	private:
+		Delegate* m_Delegate;
+		std::vector<CefRefPtr<CefBrowser>> m_BrowserList;
 
 		// Handles the browser side of query routing. The renderer side is handled
 		// in client_renderer.cc.
 		CefRefPtr<CefMessageRouterBrowserSide> m_MessageRouter;
 
-		Delegate* m_Delegate;
-
-		// The current number of browsers using this handler.
-		int m_nBrowserCount;
-
 		// Set of Handlers registered with the message router.
 		MessageHandlerSet m_MessageHandlerSet;
 
 		IMPLEMENT_REFCOUNTING(ClientHandler);
+		//IMPLEMENT_LOCKING(ClientHandler);
 		DISALLOW_COPY_AND_ASSIGN(ClientHandler);
-
-	public:
-		CefRefPtr<CefBrowser> GetBrowser() { return m_Browser; }
-		int GetBrowserId() { return m_BrowserId; }
-
-	private:
-		CefRefPtr<CefBrowser> m_Browser;
-		int m_BrowserId;
 	};
 }
 

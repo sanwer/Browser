@@ -19,11 +19,8 @@ namespace Browser
 	#define CLIENT_ID_REFRESH		(MENU_ID_USER_FIRST)
 	#define CLIENT_ID_SAMPLE		(MENU_ID_USER_FIRST+1)
 
-	ClientHandler::ClientHandler(Delegate* delegate,bool is_osr,const std::wstring& startup_url)
+	ClientHandler::ClientHandler(Delegate* delegate)
 		: m_Delegate(delegate),
-		m_IsOsr(is_osr),
-		m_StartupUrl(startup_url),
-		m_nBrowserCount(0),
 		m_MessageRouter(NULL)
 	{
 	}
@@ -108,13 +105,13 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 		if (frame->IsMain())
-			NotifyAddress(url);
+			NotifyAddress(browser, url);
 	}
 
 	void ClientHandler::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		NotifyTitle(title);
+		NotifyTitle(browser, title);
 	}
 
 	void ClientHandler::OnFaviconURLChange(
@@ -127,7 +124,7 @@ namespace Browser
 	void ClientHandler::OnFullscreenModeChange(CefRefPtr<CefBrowser> browser, bool fullscreen)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		NotifyFullscreen(fullscreen);
+		NotifyFullscreen(browser, fullscreen);
 	}
 
 	bool ClientHandler::OnConsoleMessage(CefRefPtr<CefBrowser> browser, const CefString& message, const CefString& source, int line)
@@ -263,8 +260,6 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		m_nBrowserCount++;
-
 		if (!m_MessageRouter) {
 			// Create the browser-side router for query handling.
 			CefMessageRouterConfig config;
@@ -277,32 +272,24 @@ namespace Browser
 				m_MessageRouter->AddHandler(*(it), false);
 		}
 
-		if (!m_Browser)
-		{
-			// We need to keep the main child window, but not popup windows
-			m_Browser = browser;
-			m_BrowserId = browser->GetIdentifier();
-			//if (pQCefWindow_){
-			//	QRect rc = pQCefWindow_->frameGeometry();
-			//	::MoveWindow(browser->GetHost()->GetWindowHandle(), rc.left(), rc.top(), rc.width(), rc.height(), TRUE);
-			//}
-		}
-		
-		if (GetBrowserId() == browser->GetIdentifier()){
-			NotifyBrowserCreated(browser);
-		}
+		m_BrowserList.push_back(browser);
+
+		NotifyBrowserCreated(browser);
 	}
 
 	bool ClientHandler::DoClose(CefRefPtr<CefBrowser> browser)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		if (GetBrowserId() == browser->GetIdentifier()){
-			NotifyBrowserClosing(browser);
+		NotifyBrowserClosing(browser);
+
+		HWND hWnd = browser->GetHost()->GetWindowHandle();
+		browser = NULL;
+		if(hWnd){
+			PostMessage(hWnd, WM_CLOSE, 0, 0);
 		}
 
-		// Allow the close. For windowed browsers this will result in the OS close
-		// event being sent.
+		// Allow the close. For windowed browsers this will result in the OS close event being sent.
 		return false;
 	}
 
@@ -310,19 +297,23 @@ namespace Browser
 	{
 		CEF_REQUIRE_UI_THREAD();
 
+		//AutoLock lock_scope(this);
+
 		m_MessageRouter->OnBeforeClose(browser);
 
-		if (GetBrowserId() == browser->GetIdentifier())
+		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_BrowserList.begin();
+		for (; item != m_BrowserList.end(); item++)
 		{
-			// if the main browser is closing, we need to close all the pop up browsers.
-			//CloseAllPopupBrowsers(true);
-
-			// Free the browser pointer so that the browser can be destroyed
-			m_Browser = NULL;
-			NotifyBrowserClosed(browser);
+			if ((*item)->IsSame(browser)){
+				m_BrowserList.erase(item);
+				browser = NULL;
+				break;
+			}
 		}
 
-		if (--m_nBrowserCount == 0) {
+		NotifyBrowserClosed(browser);
+
+		if (m_BrowserList.empty()) {
 			// Remove and delete message router handlers.
 			MessageHandlerSet::const_iterator it = m_MessageHandlerSet.begin();
 			for (; it != m_MessageHandlerSet.end(); ++it) {
@@ -334,41 +325,34 @@ namespace Browser
 		}
 	}
 
-	void ClientHandler::OnLoadingStateChange(
-		CefRefPtr<CefBrowser> browser,
-		bool isLoading,
-		bool canGoBack,
-		bool canGoForward)
+	void ClientHandler::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool isLoading, bool canGoBack, bool canGoForward)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		NotifyLoadingState(isLoading, canGoBack, canGoForward);
+		NotifyLoadingState(browser, isLoading, canGoBack, canGoForward);
 	}
 
-	void ClientHandler::OnLoadStart(CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame/*,TransitionType transition_type*/)
+	void ClientHandler::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame/*,TransitionType transition_type*/)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		if (m_BrowserId == browser->GetIdentifier() && frame->IsMain())
-		{
-			// We've just started loading a page
-			//SetLoading(true);
-			//Invoke_LoadStart(browser, frame);
-		}
+		//if (m_BrowserId == browser->GetIdentifier() && frame->IsMain())
+		//{
+		//	// We've just started loading a page
+		//	SetLoading(true);
+		//	Invoke_LoadStart(browser, frame);
+		//}
 	}
 
-	void ClientHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		int httpStatusCode)
+	void ClientHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
-		if (m_BrowserId == browser->GetIdentifier() && frame->IsMain())
-		{
-			//frame->ExecuteJavaScript("alert('ExecuteJavaScript works!');", frame->GetURL(), 0);
-			//CefRefPtr<CefV8Context> v8 = frame->GetV8Context();
-		}
+		//if (m_BrowserId == browser->GetIdentifier() && frame->IsMain())
+		//{
+		//	frame->ExecuteJavaScript("alert('ExecuteJavaScript works!');", frame->GetURL(), 0);
+		//	CefRefPtr<CefV8Context> v8 = frame->GetV8Context();
+		//}
 	}
 
 	void ClientHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
@@ -462,42 +446,10 @@ namespace Browser
 				allow_os_execution = true;
 	}
 
-	void ClientHandler::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser,
-		TerminationStatus status)
+	void ClientHandler::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus status)
 	{
 		CEF_REQUIRE_UI_THREAD();
-
 		m_MessageRouter->OnRenderProcessTerminated(browser);
-
-		// Don't reload if there's no start URL, or if the crash URL was specified.
-		if (m_StartupUrl.empty() || m_StartupUrl == L"chrome://crash")
-			return;
-
-		CefRefPtr<CefFrame> frame = browser->GetMainFrame();
-		std::wstring url = frame->GetURL();
-
-		// Don't reload if the termination occurred before any URL had successfully
-		// loaded.
-		if (url.empty())
-			return;
-
-		std::wstring start_url = m_StartupUrl;
-
-		// Convert URLs to lowercase for easier comparison.
-		std::transform(url.begin(), url.end(), url.begin(), tolower);
-		std::transform(start_url.begin(), start_url.end(), start_url.begin(), tolower);
-
-		// Don't reload the URL that just resulted in termination.
-		if (url.find(start_url) == 0)
-			return;
-
-		frame->LoadURL(m_StartupUrl);
-	}
-
-
-	int ClientHandler::GetBrowserCount() const {
-		CEF_REQUIRE_UI_THREAD();
-		return m_nBrowserCount;
 	}
 
 	bool ClientHandler::CreatePopupWindow(
@@ -516,13 +468,11 @@ namespace Browser
 		// Redirect all popup page into the source frame forcefully
 		//frame->LoadURL(target_url);
 
-		if(target_disposition >= WOD_NEW_FOREGROUND_TAB && target_disposition <= WOD_NEW_WINDOW){
-			bool bWithControls = true;
-			if(target_disposition == WOD_NEW_POPUP)
-				bWithControls = false;
-			BrowserManager::Get()->CreateRootWindowAsPopup(bWithControls, IsOsr(), popupFeatures, windowInfo, client, settings);
-			//Don't allow new window or tab
+		if(target_disposition == WOD_NEW_POPUP){
+			BrowserManager::Get()->CreateRootWindowAsPopup(false, target_url, popupFeatures, windowInfo, client, settings);
 			return true;
+		}else{
+			NotifyNewTab(browser,target_url);
 		}
 		return false;
 	}
@@ -562,60 +512,70 @@ namespace Browser
 			m_Delegate->OnBrowserClosed(browser);
 	}
 
-	void ClientHandler::NotifyAddress(const CefString& url) {
+	void ClientHandler::NotifyAddress(CefRefPtr<CefBrowser> browser, const CefString& url) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(
-				base::Bind(&ClientHandler::NotifyAddress, this, url));
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyAddress, this, browser, url));
 			return;
 		}
 
 		if (m_Delegate)
-			m_Delegate->OnSetAddress(url);
+			m_Delegate->OnSetAddress(browser, url);
 	}
 
-	void ClientHandler::NotifyTitle(const CefString& title) {
+	void ClientHandler::NotifyTitle(CefRefPtr<CefBrowser> browser, const CefString& title) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyTitle, this, title));
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyTitle, this, browser, title));
 			return;
 		}
 
 		if (m_Delegate)
-			m_Delegate->OnSetTitle(title);
+			m_Delegate->OnSetTitle(browser, title);
 	}
 
-	void ClientHandler::NotifyFullscreen(bool fullscreen) {
+	void ClientHandler::NotifyFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyFullscreen, this, fullscreen));
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyFullscreen, this, browser, fullscreen));
 			return;
 		}
 
 		if (m_Delegate)
-			m_Delegate->OnSetFullscreen(fullscreen);
+			m_Delegate->OnSetFullscreen(browser, fullscreen);
 	}
 
-	void ClientHandler::NotifyLoadingState(bool isLoading,bool canGoBack,bool canGoForward) {
+	void ClientHandler::NotifyLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyLoadingState, this, isLoading, canGoBack, canGoForward));
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyLoadingState, this, browser, isLoading, canGoBack, canGoForward));
 			return;
 		}
 
 		if (m_Delegate)
-			m_Delegate->OnSetLoadingState(isLoading, canGoBack, canGoForward);
+			m_Delegate->OnSetLoadingState(browser, isLoading, canGoBack, canGoForward);
 	}
 
-	void ClientHandler::NotifyDraggableRegions(
-		const std::vector<CefDraggableRegion>& regions) {
+	void ClientHandler::NotifyDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) {
 			if (!CURRENTLY_ON_MAIN_THREAD()) {
 				// Execute this method on the main thread.
-				MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyDraggableRegions, this, regions));
+				MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions));
 				return;
 			}
 
 			if (m_Delegate)
-				m_Delegate->OnSetDraggableRegions(regions);
+				m_Delegate->OnSetDraggableRegions(browser, regions);
+	}
+
+	void ClientHandler::NotifyNewTab(CefRefPtr<CefBrowser> browser, const CefString& url)
+	{
+		if (!CURRENTLY_ON_MAIN_THREAD()) {
+			// Execute this method on the main thread.
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyNewTab, this, browser, url));
+			return;
+		}
+
+		if (m_Delegate)
+			m_Delegate->OnNewPage(url);
 	}
 }
