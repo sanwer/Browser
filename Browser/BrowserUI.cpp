@@ -68,6 +68,7 @@ namespace Browser
 					if (hWnd){
 						SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
 						::ShowWindow(hWnd, SW_SHOW);
+						(*item)->GetHost()->SetFocus(true);
 					}
 				}else{
 					if (hWnd){
