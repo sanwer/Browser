@@ -170,6 +170,7 @@ namespace Browser
 					TitleUI* pItem = (TitleUI*)uiTabs->GetItemAt(idx);
 					if (pItem != NULL){
 						if(nTabsCount <= 2){
+							LoadURL(L"about:blank");
 						}else{
 							if(pItem->GetTag() == nBrowserId){
 								TitleUI* pTitle;
