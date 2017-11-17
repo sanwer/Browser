@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "JSHandler.h"
 #include <ShellAPI.h>
 #include <iphlpapi.h>

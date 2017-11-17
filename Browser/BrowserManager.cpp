@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "BrowserManager.h"
 #include <sstream>
 #include "include/base/cef_bind.h"

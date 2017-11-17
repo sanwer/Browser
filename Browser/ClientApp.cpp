@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "ClientApp.h"
 #include "JSHandler.h"
 #include "include/wrapper/cef_message_router.h"

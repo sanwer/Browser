@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <stdio.h>
 #include <algorithm>
 #include <iomanip>

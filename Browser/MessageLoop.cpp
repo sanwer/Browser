@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MessageLoop.h"
 #include "include/cef_app.h"
 #include "include/cef_task.h"
