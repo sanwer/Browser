@@ -101,7 +101,7 @@ namespace Browser
 		{
 			pUI = new Browser::TitleUI();
 		}
-			
+
 		return pUI;
 	}
 
@@ -205,6 +205,8 @@ namespace Browser
 			if (_tcsnicmp(sCtrlName,_T("tabTitle"),8) == 0){
 				CDuiString sBuffer = msg.pSender->GetText();
 				SetWindowText(m_hWnd, sBuffer.GetData());
+				sBuffer = msg.pSender->GetUserData();
+				editUrl->SetText(sBuffer.GetData());
 				if (m_pBrowser){
 					m_nBrowserSelectedId = msg.pSender->GetTag();
 					m_pBrowser->ShowPage(m_nBrowserSelectedId);
@@ -221,7 +223,7 @@ namespace Browser
 		CDuiString sBuffer;
 		if (m_bIsPopup) {
 			CreateBrowserWindow(browser,CefBrowserSettings());
-		} 
+		}
 
 		if(m_bIsPopup){
 			CLabelUI* pTitle = new CLabelUI;
@@ -270,7 +272,23 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url)
 	{
-		editUrl->SetText(url.c_str());
+		int nTabsCount = uiTabs->GetCount();
+		UINT_PTR nTag = browser->GetIdentifier();
+		for (int idx = 0; idx < nTabsCount; idx++)
+		{
+			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
+			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
+				continue;
+			if (pTitle->GetTag() == nTag){
+				pTitle->SetUserData(url.c_str());
+				CDuiString sBuffer = pTitle->GetText();
+				if(sBuffer.GetLength() == 0)
+					pTitle->SetText(url.c_str());
+			}
+		}
+		if (nTag == m_nBrowserSelectedId) {
+			editUrl->SetText(url.c_str());
+		}
 	}
 
 	void BrowserDlg::OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title)
@@ -280,14 +298,13 @@ namespace Browser
 		for (int idx = 0; idx < nTabsCount; idx++)
 		{
 			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
-			if (pTitle != NULL && pTitle->GetTag() == nTag){
+			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
+				continue;
+			if (pTitle->GetTag() == nTag){
 				pTitle->SetText(title.c_str());
 			}
 		}
-		if(nTag == m_nBrowserSelectedId){
-			SetWindowText(m_hWnd, title.c_str());
-		}
-		if (m_bIsPopup) {
+		if (m_bIsPopup || nTag == m_nBrowserSelectedId) {
 			SetWindowText(m_hWnd, title.c_str());
 		}
 	}
@@ -400,10 +417,10 @@ namespace Browser
 		REQUIRE_MAIN_THREAD();
 
 		int x, y, width, height;
-		
+
 		RECT rcWindow = m_rcBrowser;
 		//if(m_bIsPopup)
-			Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
+		Create(NULL,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,0,0,0,0,NULL);
 		if (::IsRectEmpty(&rcWindow)) {
 			CenterWindow();
 		} else {
@@ -441,8 +458,13 @@ namespace Browser
 
 		CefRefPtr<CefFrame> pFrame = browser->GetMainFrame();
 
-		tabNew->SetVisible(false);
-		uiToolbar->SetVisible(false);
+		if(m_bWithControls){
+			tabNew->SetVisible(true);
+			uiToolbar->SetVisible(true);
+		}else{
+			tabNew->SetVisible(false);
+			uiToolbar->SetVisible(false);
+		}
 		m_BrowserCtrl->ShowPopup(browser, m_hWnd, rcBrowser.left, rcBrowser.top, rcBrowser.right - rcBrowser.left, rcBrowser.bottom - rcBrowser.top);
 		if (m_pBrowser){
 			m_pBrowser->ShowPage(browser->GetIdentifier());
