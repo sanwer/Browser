@@ -12,7 +12,7 @@ namespace Browser
 	// CefApp methods.
 	void ClientAppBrowser::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line)
 	{
-		if (process_type.empty()) 
+		if (process_type.empty())
 		{
 			// 设置子进程路径很关键，如果不设置，可能会触发cef的一个bug
 			// cef在LoadUrl建立渲染进程时，会查找子进程的路径，可能会引发一个bug导致IDE在debug状态时卡死
@@ -55,7 +55,7 @@ namespace Browser
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// CefBrowserProcessHandler methods.
-	void ClientAppBrowser::OnContextInitialized() 
+	void ClientAppBrowser::OnContextInitialized()
 	{
 		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(NULL);
 		manager->SetSupportedSchemes(cookie_schemes, NULL);
@@ -75,7 +75,7 @@ namespace Browser
 			(*it)->OnBeforeChildProcessLaunch(this, command_line);
 	}
 
-	void ClientAppBrowser::OnRenderProcessThreadCreated(CefRefPtr<CefListValue> extra_info) 
+	void ClientAppBrowser::OnRenderProcessThreadCreated(CefRefPtr<CefListValue> extra_info)
 	{
 		DelegateSet::iterator it = m_delegates.begin();
 		for (; it != m_delegates.end(); ++it)
@@ -88,11 +88,11 @@ namespace Browser
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// CefRenderProcessHandler methods.
-	void ClientAppRenderer::OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) 
+	void ClientAppRenderer::OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info)
 	{
 	}
 
-	void ClientAppRenderer::OnWebKitInitialized() 
+	void ClientAppRenderer::OnWebKitInitialized()
 	{
 		//JS扩展代码
 		std::string extensionCode =
@@ -112,7 +112,7 @@ namespace Browser
 	{
 	}
 
-	void ClientAppRenderer::OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) 
+	void ClientAppRenderer::OnBrowserDestroyed(CefRefPtr<CefBrowser> browser)
 	{
 	}
 
@@ -126,16 +126,16 @@ namespace Browser
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
 		NavigationType navigation_type,
-		bool is_redirect) 
+		bool is_redirect)
 	{
 		return false;
 	}
 
-	void ClientAppRenderer::OnContextCreated(CefRefPtr<CefBrowser> browser,	CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) 
+	void ClientAppRenderer::OnContextCreated(CefRefPtr<CefBrowser> browser,	CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 	{
 	}
 
-	void ClientAppRenderer::OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,	CefRefPtr<CefV8Context> context) 
+	void ClientAppRenderer::OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,	CefRefPtr<CefV8Context> context)
 	{
 	}
 
@@ -144,21 +144,21 @@ namespace Browser
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context,
 		CefRefPtr<CefV8Exception> exception,
-		CefRefPtr<CefV8StackTrace> stackTrace) 
+		CefRefPtr<CefV8StackTrace> stackTrace)
 	{
 	}
 
 	void ClientAppRenderer::OnFocusedNodeChanged(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefDOMNode> node) 
+		CefRefPtr<CefDOMNode> node)
 	{
 	}
 
 	bool ClientAppRenderer::OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
 		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message) 
+		CefRefPtr<CefProcessMessage> message)
 	{
 		return false;
 	}

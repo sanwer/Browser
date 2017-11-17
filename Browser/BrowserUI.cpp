@@ -130,7 +130,7 @@ namespace Browser
 		if(m_ClientHandler->m_BrowserList.empty()){
 			m_ClientHandler->DetachDelegate();
 			m_ClientHandler = NULL;
-			
+
 			m_Delegate->OnBrowserExit(browser);
 		}
 	}
@@ -367,12 +367,12 @@ namespace Browser
 			return;
 		}
 
-		if( event.Type == UIEVENT_SETFOCUS ) 
+		if( event.Type == UIEVENT_SETFOCUS )
 		{
 			m_bFocused = true;
 			return;
 		}
-		if( event.Type == UIEVENT_KILLFOCUS ) 
+		if( event.Type == UIEVENT_KILLFOCUS )
 		{
 			m_bFocused = false;
 			return;
@@ -384,7 +384,7 @@ namespace Browser
 				Invalidate();
 			}
 			return;
-		}	
+		}
 		if( event.Type == UIEVENT_MOUSEMOVE )
 		{
 			if( (m_uButtonState & UISTATE_CAPTURED) != 0 ) {
@@ -399,7 +399,7 @@ namespace Browser
 			if( (m_uButtonState & UISTATE_CAPTURED) != 0 ) {
 				m_uButtonState &= ~(UISTATE_PUSHED | UISTATE_CAPTURED);
 				Invalidate();
-				if( ::PtInRect(&m_rcItem, event.ptMouse) ) Activate();				
+				if( ::PtInRect(&m_rcItem, event.ptMouse) ) Activate();
 			}
 			return;
 		}
@@ -458,10 +458,10 @@ namespace Browser
 		else if( _tcsicmp(pstrName, _T("textpadding")) == 0 ) {
 			RECT rcTextPadding = { 0 };
 			LPTSTR pstr = NULL;
-			rcTextPadding.left = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);    
-			rcTextPadding.top = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);    
-			rcTextPadding.right = _tcstol(pstr + 1, &pstr, 10);  ASSERT(pstr);    
-			rcTextPadding.bottom = _tcstol(pstr + 1, &pstr, 10); ASSERT(pstr);    
+			rcTextPadding.left = _tcstol(pstrValue, &pstr, 10);  ASSERT(pstr);
+			rcTextPadding.top = _tcstol(pstr + 1, &pstr, 10);    ASSERT(pstr);
+			rcTextPadding.right = _tcstol(pstr + 1, &pstr, 10);  ASSERT(pstr);
+			rcTextPadding.bottom = _tcstol(pstr + 1, &pstr, 10); ASSERT(pstr);
 			SetTextPadding(rcTextPadding);
 		}
 		else if( _tcsicmp(pstrName, _T("group")) == 0 ){

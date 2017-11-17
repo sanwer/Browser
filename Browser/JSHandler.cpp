@@ -15,7 +15,7 @@ namespace Browser
 		if (name == L"GetComputerName") {
 			TCHAR szComputerName[MAX_COMPUTERNAME_LENGTH+1];
 			memset(szComputerName,0,sizeof(szComputerName));
-			DWORD dwNameLen = MAX_COMPUTERNAME_LENGTH;  
+			DWORD dwNameLen = MAX_COMPUTERNAME_LENGTH;
 			GetComputerName(szComputerName, &dwNameLen);
 			retval = CefV8Value::CreateString(szComputerName);
 			return true;

@@ -16,20 +16,20 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	DuiLib::CPaintManagerUI::SetResourceType(DuiLib::UILIB_ZIPRESOURCE);
 	DuiLib::CPaintManagerUI::SetResourcePath(DuiLib::CPaintManagerUI::GetInstancePath());
 	DuiLib::CPaintManagerUI::SetResourceZip(MAKEINTRESOURCE(IDR_ZIPRES), _T("ZIPRES"));
-	
+
 	CefMainArgs main_args(hInstance);
 	CefRefPtr<CefApp> app;
 	CefSettings settings;// Specify CEF global settings here.
 	void* sandbox_info = NULL;
 #ifdef CEF_USE_SANDBOX
-  CefScopedSandboxInfo scoped_sandbox;
-  sandbox_info = scoped_sandbox.sandbox_info();
+	CefScopedSandboxInfo scoped_sandbox;
+	sandbox_info = scoped_sandbox.sandbox_info();
 #else
 	settings.no_sandbox = true;
 #endif
 	//CefRefPtr<Browser::ClientAppBrowser> app(new Browser::ClientAppBrowser);
 	CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
-    app = new Browser::ClientAppBrowser();
+	app = new Browser::ClientAppBrowser();
 	command_line->InitFromString(::GetCommandLineW());
 	const std::string& process_type = command_line->GetSwitchValue("type");
 
@@ -72,7 +72,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	// Shut down CEF.
 	CefShutdown();
-	
+
 	message_loop.reset();
 
 	::CoUninitialize();

@@ -64,7 +64,7 @@ namespace Browser
 
 		//if(model->IsVisible(MENU_ID_VIEW_SOURCE))
 		//	model->Remove(MENU_ID_VIEW_SOURCE);//删除查看源码菜单
-		
+
 		//model->AddSeparator();//增加分隔符
 
 		model->AddItem(CLIENT_ID_REFRESH,	CefString(L"刷新(&R)"));
@@ -86,13 +86,13 @@ namespace Browser
 			return true;
 		case CLIENT_ID_SAMPLE:
 			{
-				std::string html =  
+				std::string html =
 					"<html><body>"
 					"<script language=\"JavaScript\">"
 					"document.writeln('ComputerName:');"
 					"document.writeln(Client.GetComputerName());"
 					"</script>"
-					"</body></html>";  
+					"</body></html>";
 				frame->LoadString(html, "about:blank");
 			}
 			return true;
@@ -192,22 +192,22 @@ namespace Browser
 		CefRefPtr<CefDragData> dragData,
 		CefDragHandler::DragOperationsMask mask)
 	{
-			CEF_REQUIRE_UI_THREAD();
+		CEF_REQUIRE_UI_THREAD();
 
-			// Forbid dragging of link URLs.
-			if (mask & DRAG_OPERATION_LINK)
-				return true;
+		// Forbid dragging of link URLs.
+		if (mask & DRAG_OPERATION_LINK)
+			return true;
 
-			return false;
+		return false;
 	}
 
 	void ClientHandler::OnDraggableRegionsChanged(
 		CefRefPtr<CefBrowser> browser,
 		const std::vector<CefDraggableRegion>& regions)
 	{
-			CEF_REQUIRE_UI_THREAD();
+		CEF_REQUIRE_UI_THREAD();
 
-			//NotifyDraggableRegions(regions);
+		//NotifyDraggableRegions(regions);
 	}
 
 	bool ClientHandler::OnRequestGeolocationPermission(CefRefPtr<CefBrowser> browser,
@@ -557,14 +557,14 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) {
-			if (!CURRENTLY_ON_MAIN_THREAD()) {
-				// Execute this method on the main thread.
-				MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions));
-				return;
-			}
+		if (!CURRENTLY_ON_MAIN_THREAD()) {
+			// Execute this method on the main thread.
+			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions));
+			return;
+		}
 
-			if (m_Delegate)
-				m_Delegate->OnSetDraggableRegions(browser, regions);
+		if (m_Delegate)
+			m_Delegate->OnSetDraggableRegions(browser, regions);
 	}
 
 	void ClientHandler::NotifyNewTab(CefRefPtr<CefBrowser> browser, const CefString& url)
