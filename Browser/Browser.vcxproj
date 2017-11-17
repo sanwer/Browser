@@ -160,6 +160,7 @@
     <ClInclude Include="BrowserDlg.h" />
     <ClInclude Include="ClientApp.h" />
     <ClInclude Include="ClientHandler.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="JSHandler.h" />
     <ClInclude Include="MessageLoop.h" />
     <ClInclude Include="resource.h" />
