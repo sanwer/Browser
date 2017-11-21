@@ -49,6 +49,7 @@ myproj.csproj
 IF "%ERRORLEVEL%"=="1" GOTO Error
 Echo Package
 pushd "%CD%\Bin\"
+IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 IF EXIST Browser_CEF.zip DEL /F /Q /S Browser_CEF.zip
 7z.exe a Browser_CEF.zip Browser.exe ReadMe.txt locales plugins\pepflashplayer.dll cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin
 popd popd
@@ -63,6 +64,7 @@ DEVENV Browser.sln /build "Release|Win32"
 IF "%ERRORLEVEL%"=="1" GOTO Error
 Echo Package
 pushd "%CD%\Bin\"
+IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 IF EXIST Browser_miniblink.zip DEL /F /Q /S Browser_miniblink.zip
 7z.exe a Browser_miniblink.zip Browser.exe node.dll ReadMe.txt plugins\NPSWF32.dll
 popd popd
@@ -72,7 +74,7 @@ GOTO End
 :Clean
 Echo Clean Temp File
 DEL /F /Q /S /A *.sdf *.user *.ilk *.ipch DuiLib*.lib libcef*.lib DuiLib*.pdb libcef*.pdb
-DEL /F /Q /S /A .\Bin\Browser.exe .\Bin\Browser.pdb .\Bin\Browser_d.exe .\Bin\Browser_d.pdb .\Bin\Browser_CEF.zip .\Bin\Browser_miniblink.zip
+DEL /F /Q /S /A .\Bin\Browser.exe .\Bin\Browser.pdb .\Bin\Browser_d.exe .\Bin\Browser_d.pdb
 DEL /F /Q /S /A .\Bin\DuiLib.exe .\Bin\DuiLib.pdb .\Bin\DuiLib_d.dll .\Bin\DuiLib_d.pdb
 IF EXIST .\Bin\Debug RD /S /Q .\Bin\Debug
 IF EXIST .\Bin\Release RD /S /Q .\Bin\Release
