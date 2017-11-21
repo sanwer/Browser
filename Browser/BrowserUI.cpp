@@ -241,12 +241,7 @@ namespace Browser
 		if(m_pCtrl){
 			CefRefPtr<CefBrowser> pBrowser = m_pCtrl->GetBrowser(nBrowserId);
 			if(pBrowser.get()){
-				HWND hWnd = pBrowser->GetHost()->GetWindowHandle();
-				if (hWnd){
-					//::PostMessage(hWnd, WM_CLOSE, 0, 0);
-					//SetWindowPos(hWnd, NULL,0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
-					pBrowser->GetHost()->CloseBrowser(false);
-				}
+				pBrowser->GetHost()->CloseBrowser(false);
 			}
 		}
 	}
