@@ -226,18 +226,16 @@ namespace Browser
 			CreateBrowserWindow(browser,CefBrowserSettings());
 		}
 
+		int nBrowserId = browser->GetIdentifier();
+		int iCount = uiTabs->GetCount();
 		if(m_bIsPopup){
 			CLabelUI* pTitle = new CLabelUI;
-			int nBrowserId = browser->GetIdentifier();
-			int iCount = uiTabs->GetCount();
 			uiTabs->AddAt(pTitle, iCount - 1);
 			sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
 			pTitle->ApplyAttributeList(sBuffer);
 			pTitle->SetTag(nBrowserId);
 		}else{
 			TitleUI* pTitle = new TitleUI;
-			int nBrowserId = browser->GetIdentifier();
-			int iCount = uiTabs->GetCount();
 			uiTabs->AddAt(pTitle, iCount - 1);
 			sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
 			pTitle->ApplyAttributeList(sBuffer);
