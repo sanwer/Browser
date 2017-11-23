@@ -26,8 +26,14 @@ namespace Browser
 			//command_line->AppendSwitch("single-process");
 
 #ifndef USE_MINIBLINK
-			command_line->AppendSwitchWithValue("ppapi-flash-version", "20.0.0.228");
-			command_line->AppendSwitchWithValue("ppapi-flash-path", "plugins\\pepflashplayer.dll");
+			//command_line->AppendSwitch("--disable-web-security");//关闭同源策略
+
+			//使用系统Flash
+			command_line->AppendSwitch("--enable-system-flash");
+
+			//指定Flash
+			//command_line->AppendSwitchWithValue("ppapi-flash-version", "20.0.0.228");
+			//command_line->AppendSwitchWithValue("ppapi-flash-path", "plugins\\pepflashplayer.dll");
 #endif
 			//同一个域下的使用同一个渲染进程
 			command_line->AppendSwitch("process-per-site");
