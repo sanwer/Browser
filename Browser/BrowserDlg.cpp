@@ -221,32 +221,8 @@ namespace Browser
 	{
 		REQUIRE_MAIN_THREAD();
 
-		CDuiString sBuffer;
 		if (m_bIsPopup) {
 			CreateBrowserWindow(browser,CefBrowserSettings());
-		}
-
-		int nBrowserId = browser->GetIdentifier();
-		int iCount = uiTabs->GetCount();
-		if(m_bIsPopup){
-			CLabelUI* pTitle = new CLabelUI;
-			uiTabs->AddAt(pTitle, iCount - 1);
-			sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
-			pTitle->ApplyAttributeList(sBuffer);
-			pTitle->SetTag(nBrowserId);
-		}else{
-			TitleUI* pTitle = new TitleUI;
-			uiTabs->AddAt(pTitle, iCount - 1);
-			sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
-			pTitle->ApplyAttributeList(sBuffer);
-			CControlUI* pControl = new CControlUI;
-			CButtonUI* pClose = new CButtonUI;
-			pTitle->Add(pControl);
-			pTitle->Add(pClose);
-			sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
-			pClose->ApplyAttributeList(sBuffer);
-			pTitle->SetTag(nBrowserId);
-			pTitle->Selected(true);
 		}
 	}
 
@@ -271,39 +247,67 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url)
 	{
+		CDuiString sBuffer;
+		bool bAddTab = true;
 		int nTabsCount = uiTabs->GetCount();
-		UINT_PTR nTag = browser->GetIdentifier();
+		int nBrowserId = browser->GetIdentifier();
 		for (int idx = 0; idx < nTabsCount; idx++)
 		{
 			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
 			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
 				continue;
-			if (pTitle->GetTag() == nTag){
+			if (pTitle->GetTag() == nBrowserId){
+				bAddTab = false;
 				pTitle->SetUserData(url.c_str());
 				CDuiString sBuffer = pTitle->GetText();
 				if(sBuffer.GetLength() == 0)
 					pTitle->SetText(url.c_str());
 			}
 		}
-		if (nTag == m_nBrowserSelectedId) {
+		if (nBrowserId == m_nBrowserSelectedId) {
 			editUrl->SetText(url.c_str());
+		}
+		if(bAddTab){
+			if(m_bIsPopup){
+				CLabelUI* pTitle = new CLabelUI;
+				pTitle->SetTag(nBrowserId);
+				uiTabs->AddAt(pTitle, nTabsCount - 1);
+				sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
+				pTitle->ApplyAttributeList(sBuffer);
+			}else{
+				if(wcsnicmp(url.c_str(),L"chrome-devtools:",16)!=0){
+				TitleUI* pTitle = new TitleUI;
+				pTitle->SetTag(nBrowserId);
+				uiTabs->AddAt(pTitle, nTabsCount - 1);
+					sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
+					pTitle->ApplyAttributeList(sBuffer);
+					CControlUI* pControl = new CControlUI;
+					CButtonUI* pClose = new CButtonUI;
+					pTitle->Add(pControl);
+					pTitle->Add(pClose);
+					sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
+					pClose->ApplyAttributeList(sBuffer);
+					pTitle->Selected(true);
+					editUrl->SetText(url.c_str());
+				}
+			}
 		}
 	}
 
 	void BrowserDlg::OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title)
 	{
 		int nTabsCount = uiTabs->GetCount();
-		UINT_PTR nTag = browser->GetIdentifier();
+		int nBrowserId = browser->GetIdentifier();
 		for (int idx = 0; idx < nTabsCount; idx++)
 		{
 			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
 			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
 				continue;
-			if (pTitle->GetTag() == nTag){
+			if (pTitle->GetTag() == nBrowserId){
 				pTitle->SetText(title.c_str());
 			}
 		}
-		if (m_bIsPopup || nTag == m_nBrowserSelectedId) {
+		if (m_bIsPopup || nBrowserId == m_nBrowserSelectedId) {
 			SetWindowText(m_hWnd, title.c_str());
 		}
 	}

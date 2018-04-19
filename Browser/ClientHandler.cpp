@@ -18,7 +18,8 @@ namespace Browser
 {
 	// Custom menu command Ids.
 	#define CLIENT_ID_REFRESH		(MENU_ID_USER_FIRST)
-	#define CLIENT_ID_SAMPLE		(MENU_ID_USER_FIRST+1)
+	#define CLIENT_ID_SHOW_DEVTOOLS	(MENU_ID_USER_FIRST+1)
+	#define CLIENT_ID_SAMPLE		(MENU_ID_USER_FIRST+2)
 
 	ClientHandler::ClientHandler(Delegate* delegate)
 		: m_Delegate(delegate),
@@ -69,6 +70,7 @@ namespace Browser
 		//model->AddSeparator();//增加分隔符
 
 		model->AddItem(CLIENT_ID_REFRESH,	CefString(L"刷新(&R)"));
+		model->AddItem(CLIENT_ID_SHOW_DEVTOOLS,	CefString(L"开发工具"));
 		//model->AddItem(CLIENT_ID_SAMPLE,	CefString(L"计算机名"));
 	}
 
@@ -85,6 +87,19 @@ namespace Browser
 		case CLIENT_ID_REFRESH:
 			browser->Reload();
 			return true;
+		case CLIENT_ID_SHOW_DEVTOOLS:
+			{
+				CefWindowInfo windowInfo;
+				CefBrowserSettings settings;
+				HWND hWnd = browser->GetHost()->GetWindowHandle();
+				RECT rcWnd={0};
+				::GetWindowRect(hWnd, &rcWnd);
+				windowInfo.SetAsPopup(hWnd,L"开发工具");
+				CefPoint point;
+				point.Set(rcWnd.left,rcWnd.top);
+				browser->GetHost()->ShowDevTools(windowInfo,this,settings,point);
+				return true;
+			}
 		case CLIENT_ID_SAMPLE:
 			{
 				std::string html =
@@ -576,7 +591,10 @@ namespace Browser
 			return;
 		}
 
-		if (m_Delegate)
-			m_Delegate->OnNewPage(url);
+		if (m_Delegate){
+			if(wcsnicmp(url.c_str(),L"chrome-devtools:",16)!=0){
+				m_Delegate->OnNewPage(url);
+			}
+		}
 	}
 }
