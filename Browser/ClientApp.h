@@ -42,6 +42,8 @@ namespace Browser
 		ClientAppBrowser();
 
 	private:
+		// Creates all of the Delegate objects.
+		static void CreateDelegates(DelegateSet& delegates);
 		// CefApp methods.
 		void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE;
 		void OnRegisterCustomSchemes( CefRefPtr<CefSchemeRegistrar> registrar) OVERRIDE;
@@ -124,6 +126,7 @@ namespace Browser
 		ClientAppRenderer();
 
 	private:
+		// Creates all of the Delegate objects.
 		static void CreateDelegates(DelegateSet& delegates);
 
 		// CefApp methods.
@@ -164,8 +167,11 @@ namespace Browser
 		IMPLEMENT_REFCOUNTING(ClientAppRenderer);
 		DISALLOW_COPY_AND_ASSIGN(ClientAppRenderer);
 	};
-
-	void CreateDelegates(ClientAppRenderer::DelegateSet& delegates);
+	
+	namespace Renderer
+	{
+		void CreateDelegates(ClientAppRenderer::DelegateSet& delegates);
+	}
 
 }
 

@@ -202,15 +202,15 @@ namespace Browser
 			CefRefPtr<CefFrame> frame,
 			CefRefPtr<CefRequest> request,
 			CefRefPtr<CefRequestCallback> callback) OVERRIDE;
-		//CefRefPtr<CefResourceHandler> GetResourceHandler(
-		//	CefRefPtr<CefBrowser> browser,
-		//	CefRefPtr<CefFrame> frame,
-		//	CefRefPtr<CefRequest> request) OVERRIDE;
-		//CefRefPtr<CefResponseFilter> GetResourceResponseFilter(
-		//	CefRefPtr<CefBrowser> browser,
-		//	CefRefPtr<CefFrame> frame,
-		//	CefRefPtr<CefRequest> request,
-		//	CefRefPtr<CefResponse> response) OVERRIDE;
+		CefRefPtr<CefResourceHandler> GetResourceHandler(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefRequest> request) OVERRIDE;
+		CefRefPtr<CefResponseFilter> GetResourceResponseFilter(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefRequest> request,
+			CefRefPtr<CefResponse> response) OVERRIDE;
 		bool OnQuotaRequest(
 			CefRefPtr<CefBrowser> browser,
 			const CefString& origin_url,
@@ -265,6 +265,9 @@ namespace Browser
 		// Handles the browser side of query routing. The renderer side is handled
 		// in client_renderer.cc.
 		CefRefPtr<CefMessageRouterBrowserSide> m_MessageRouter;
+
+		// Manages the registration and delivery of resources.
+		CefRefPtr<CefResourceManager> m_ResourceManager;
 
 		// Set of Handlers registered with the message router.
 		MessageHandlerSet m_MessageHandlerSet;

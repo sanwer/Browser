@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "ClientApp.h"
-#include "JSHandler.h"
 #include "include/wrapper/cef_message_router.h"
 
 namespace Browser
 {
 	ClientAppBrowser::ClientAppBrowser()
 	{
+		CreateDelegates(m_delegates);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -40,13 +40,34 @@ namespace Browser
 			command_line->AppendSwitch("enable-caret-browsing");
 			command_line->AppendSwitch("auto-positioned-ime-window");
 
-			//禁用一些选项，提升cef性能
-			command_line->AppendSwitch("disable-surfaces");
-			command_line->AppendSwitch("disable-gpu");
-			command_line->AppendSwitch("disable-gpu-compositing");
+			// Pass additional command-line flags when off-screen rendering is enabled.
+			if (command_line->HasSwitch("off-screen-rendering-enabled")) {
+				// If the PDF extension is enabled then cc Surfaces must be disabled for
+				// PDFs to render correctly.
+				// See https://bitbucket.org/chromiumembedded/cef/issues/1689 for details.
+				if (!command_line->HasSwitch("disable-extensions") &&
+					!command_line->HasSwitch("disable-pdf-extension")) {
+						command_line->AppendSwitch("disable-surfaces");
+				}
 
-			//开启离屏渲染
-			//command_line->AppendSwitch("enable-begin-frame-scheduling");
+				// Use software rendering and compositing (disable GPU) for increased FPS
+				// and decreased CPU usage. This will also disable WebGL so remove these
+				// switches if you need that capability.
+				// See https://bitbucket.org/chromiumembedded/cef/issues/1257 for details.
+				if (!command_line->HasSwitch("enable-gpu")) {
+					command_line->AppendSwitch("disable-gpu");
+					command_line->AppendSwitch("disable-gpu-compositing");
+				}
+
+				// Synchronize the frame rate between all processes. This results in
+				// decreased CPU usage by avoiding the generation of extra frames that
+				// would otherwise be discarded. The frame rate can be set at browser
+				// creation time via CefBrowserSettings.windowless_frame_rate or changed
+				// dynamically using CefBrowserHost::SetWindowlessFrameRate. In cefclient
+				// it can be set via the command-line using `--off-screen-frame-rate=XX`.
+				// See https://bitbucket.org/chromiumembedded/cef/issues/1368 for details.
+				command_line->AppendSwitch("enable-begin-frame-scheduling");
+			}
 		}
 		DelegateSet::iterator it = m_delegates.begin();
 		for (; it != m_delegates.end(); ++it)
@@ -65,10 +86,8 @@ namespace Browser
 	void ClientAppBrowser::OnContextInitialized()
 	{
 		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(NULL);
+		DCHECK(manager.get());
 		manager->SetSupportedSchemes(cookie_schemes, NULL);
-
-		// 删除保存的Cooies信息
-		// manager->DeleteCookies(L"", L"", nullptr);
 
 		DelegateSet::iterator it = m_delegates.begin();
 		for (; it != m_delegates.end(); ++it)
@@ -97,35 +116,40 @@ namespace Browser
 	// CefRenderProcessHandler methods.
 	void ClientAppRenderer::OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnRenderThreadCreated(this, extra_info);
 	}
 
 	void ClientAppRenderer::OnWebKitInitialized()
 	{
-		//JS扩展代码
-		std::string extensionCode =
-			"var Client;"
-			"if (!Client)"
-			"  Client = {};"
-			"(function() {"
-			"  Client.GetComputerName = function() {"
-			"    native function GetComputerName();"
-			"      return GetComputerName();"
-			"  };"
-			"})();";
-		CefRegisterExtension( "v8/Client", extensionCode, new ClientJSHandler() );
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnWebKitInitialized(this);
 	}
 
 	void ClientAppRenderer::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnBrowserCreated(this, browser);
 	}
 
 	void ClientAppRenderer::OnBrowserDestroyed(CefRefPtr<CefBrowser> browser)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnBrowserDestroyed(this, browser);
 	}
 
 	CefRefPtr<CefLoadHandler> ClientAppRenderer::GetLoadHandler()
 	{
-		return NULL;
+		CefRefPtr<CefLoadHandler> load_handler;
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end() && !load_handler.get(); ++it)
+			load_handler = (*it)->GetLoadHandler(this);
+
+		return load_handler;
 	}
 
 	bool ClientAppRenderer::OnBeforeNavigation(
@@ -135,15 +159,29 @@ namespace Browser
 		NavigationType navigation_type,
 		bool is_redirect)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it) {
+			if ((*it)->OnBeforeNavigation(this, browser, frame, request,
+				navigation_type, is_redirect)) {
+					return true;
+			}
+		}
+
 		return false;
 	}
 
 	void ClientAppRenderer::OnContextCreated(CefRefPtr<CefBrowser> browser,	CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnContextCreated(this, browser, frame, context);
 	}
 
 	void ClientAppRenderer::OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,	CefRefPtr<CefV8Context> context)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnContextReleased(this, browser, frame, context);
 	}
 
 	void ClientAppRenderer::OnUncaughtException
@@ -153,6 +191,10 @@ namespace Browser
 		CefRefPtr<CefV8Exception> exception,
 		CefRefPtr<CefV8StackTrace> stackTrace)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it) {
+			(*it)->OnUncaughtException(this, browser, frame, context, exception,stackTrace);
+		}
 	}
 
 	void ClientAppRenderer::OnFocusedNodeChanged(
@@ -160,6 +202,9 @@ namespace Browser
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefDOMNode> node)
 	{
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end(); ++it)
+			(*it)->OnFocusedNodeChanged(this, browser, frame, node);
 	}
 
 	bool ClientAppRenderer::OnProcessMessageReceived(
@@ -167,11 +212,16 @@ namespace Browser
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message)
 	{
-		return false;
-	}
+		DCHECK_EQ(source_process, PID_BROWSER);
 
-	void ClientAppRenderer::CreateDelegates(DelegateSet& delegates) {
-		Browser::CreateDelegates(delegates);
+		bool handled = false;
+
+		DelegateSet::iterator it = m_delegates.begin();
+		for (; it != m_delegates.end() && !handled; ++it) {
+			handled = (*it)->OnProcessMessageReceived(this, browser, source_process,message);
+		}
+
+		return handled;
 	}
 
 	const char kFocusedNodeChangedMessage[] = "ClientRenderer.FocusedNodeChanged";
@@ -235,8 +285,11 @@ namespace Browser
 		IMPLEMENT_REFCOUNTING(ClientRenderDelegate);
 	};
 
-	void CreateDelegates(ClientAppRenderer::DelegateSet& delegates) {
-		delegates.insert(new ClientRenderDelegate);
+	namespace Renderer
+	{
+		void CreateDelegates(ClientAppRenderer::DelegateSet& delegates) {
+			delegates.insert(new ClientRenderDelegate);
+		}
 	}
 
 }

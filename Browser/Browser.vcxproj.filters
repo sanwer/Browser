@@ -21,9 +21,6 @@
     <ClCompile Include="BrowserUI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="JSHandler.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="MainDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -42,6 +39,15 @@
     <ClCompile Include="BrowserDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ClientRunner.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ResponseFilter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -51,9 +57,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="BrowserUI.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="JSHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ClientApp.h">
@@ -74,9 +77,24 @@
     <ClInclude Include="config.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ClientRunner.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ResponseFilter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Browser.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="Logo.png">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="Skin.zip">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

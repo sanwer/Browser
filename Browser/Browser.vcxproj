@@ -78,6 +78,9 @@
     <PostBuildEvent>
       <Command>DEL Skin.zip</Command>
     </PostBuildEvent>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.;..\..\libcef</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -97,6 +100,9 @@
     <PreBuildEvent>
       <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
     </PreBuildEvent>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.;..\..\libcef</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -117,6 +123,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\;..\..\libcef\Lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DuiLib.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.;..\..\libcef</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,6 +146,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\$(Platform)\;..\..\libcef\Lib\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DuiLib.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.;..\..\libcef</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BrowserManager.cpp" />
@@ -144,9 +156,11 @@
     <ClCompile Include="BrowserDlg.cpp" />
     <ClCompile Include="ClientApp.cpp" />
     <ClCompile Include="ClientHandler.cpp" />
+    <ClCompile Include="ClientRunner.cpp" />
     <ClCompile Include="MainDlg.cpp" />
-    <ClCompile Include="JSHandler.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
+    <ClCompile Include="ResourceUtil.cpp" />
+    <ClCompile Include="ResponseFilter.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -160,14 +174,18 @@
     <ClInclude Include="BrowserDlg.h" />
     <ClInclude Include="ClientApp.h" />
     <ClInclude Include="ClientHandler.h" />
+    <ClInclude Include="ClientRunner.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="JSHandler.h" />
     <ClInclude Include="MessageLoop.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ResourceUtil.h" />
+    <ClInclude Include="ResponseFilter.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Browser.ico" />
+    <None Include="Logo.png" />
+    <None Include="Skin.zip" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Browser.rc" />

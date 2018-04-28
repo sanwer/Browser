@@ -11,20 +11,23 @@
 #include "include/cef_command_line.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "ClientHandler.h"
+#include "ClientRunner.h"
 #include "MessageLoop.h"
 #include "BrowserManager.h"
+#include "ResponseFilter.h"
 
 namespace Browser
 {
 	// Custom menu command Ids.
 	#define CLIENT_ID_REFRESH		(MENU_ID_USER_FIRST)
 	#define CLIENT_ID_SHOW_DEVTOOLS	(MENU_ID_USER_FIRST+1)
-	#define CLIENT_ID_SAMPLE		(MENU_ID_USER_FIRST+2)
+	#define CLIENT_ID_LOGO			(MENU_ID_USER_FIRST+2)
 
 	ClientHandler::ClientHandler(Delegate* delegate)
-		: m_Delegate(delegate),
-		m_MessageRouter(NULL)
+		: m_Delegate(delegate)
 	{
+		m_ResourceManager = new CefResourceManager();
+		ClientRunner::SetupResourceManager(m_ResourceManager);
 	}
 
 	void ClientHandler::DetachDelegate()
@@ -62,7 +65,7 @@ namespace Browser
 		//model->Clear();//清空上下文菜单项
 
 		//if(model->IsVisible(MENU_ID_PRINT))
-		//	model->Remove(MENU_ID_PRINT);//删除打印菜单
+			model->Remove(MENU_ID_PRINT);//删除打印菜单
 
 		//if(model->IsVisible(MENU_ID_VIEW_SOURCE))
 		//	model->Remove(MENU_ID_VIEW_SOURCE);//删除查看源码菜单
@@ -71,7 +74,7 @@ namespace Browser
 
 		model->AddItem(CLIENT_ID_REFRESH,	CefString(L"刷新(&R)"));
 		model->AddItem(CLIENT_ID_SHOW_DEVTOOLS,	CefString(L"开发工具"));
-		//model->AddItem(CLIENT_ID_SAMPLE,	CefString(L"计算机名"));
+		model->AddItem(CLIENT_ID_LOGO,	CefString(L"显示LOGO"));
 	}
 
 	bool ClientHandler::OnContextMenuCommand(
@@ -100,17 +103,8 @@ namespace Browser
 				browser->GetHost()->ShowDevTools(windowInfo,this,settings,point);
 				return true;
 			}
-		case CLIENT_ID_SAMPLE:
-			{
-				std::string html =
-					"<html><body>"
-					"<script language=\"JavaScript\">"
-					"document.writeln('ComputerName:');"
-					"document.writeln(Client.GetComputerName());"
-					"</script>"
-					"</body></html>";
-				frame->LoadString(html, "about:blank");
-			}
+		case CLIENT_ID_LOGO:
+			frame->LoadURL("http://tests/logo.png");				
 			return true;
 		default:
 			return false;
@@ -282,7 +276,7 @@ namespace Browser
 			m_MessageRouter = CefMessageRouterBrowserSide::Create(config);
 
 			// Register handlers with the router.
-			//test_runner::CreateMessageHandlers(m_MessageHandlerSet);
+			ClientRunner::CreateMessageHandlers(m_MessageHandlerSet);
 			MessageHandlerSet::const_iterator it = m_MessageHandlerSet.begin();
 			for (; it != m_MessageHandlerSet.end(); ++it)
 				m_MessageRouter->AddHandler(*(it), false);
@@ -413,10 +407,27 @@ namespace Browser
 		CefRefPtr<CefRequest> request,
 		CefRefPtr<CefRequestCallback> callback)
 	{
-		//OutputDebugStringW(request->GetURL().c_str());
-		//https://easylist-downloads.adblockplus.org/easylistchina.txt
-		//正则过滤
-		return RV_CONTINUE;
+		CEF_REQUIRE_IO_THREAD();
+		return m_ResourceManager->OnBeforeResourceLoad(browser, frame, request, callback);
+	}
+
+	CefRefPtr<CefResourceHandler> ClientHandler::GetResourceHandler(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefRefPtr<CefRequest> request)
+	{
+		CEF_REQUIRE_IO_THREAD();
+		return m_ResourceManager->GetResourceHandler(browser, frame, request);
+	}
+
+	CefRefPtr<CefResponseFilter> ClientHandler::GetResourceResponseFilter(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefRefPtr<CefRequest> request,
+		CefRefPtr<CefResponse> response)
+	{
+		CEF_REQUIRE_IO_THREAD();
+		return Filter::GetResourceResponseFilter(browser, frame, request, response);
 	}
 
 	bool ClientHandler::OnOpenURLFromTab(

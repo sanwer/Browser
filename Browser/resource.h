@@ -5,6 +5,8 @@
 #define IDR_ZIPRES                      101
 #define IDR_MAINFRAME                   128
 #define IDC_STATIC                      -1
+#define BINARY                          256
+#define IDS_LOGO_PNG                    1001
 
 // Next default values for new objects
 // 
