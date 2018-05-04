@@ -8,7 +8,6 @@
 #define BINARY                          256
 #define IDS_LOGO_PNG                    1001
 #define IDS_BINDING_HTML                1002
-#define IDS_RESPONSE_FILTER_HTML        1003
 
 // Next default values for new objects
 // 

@@ -30,7 +30,6 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 
 IDS_LOGO_PNG BINARY "Logo.png"
 IDS_BINDING_HTML BINARY "binding.html"
-IDS_RESPONSE_FILTER_HTML BINARY "response_filter.html"
 
 /////////////////////////////////////////////////////////////////////////////
 //
