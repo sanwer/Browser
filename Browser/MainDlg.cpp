@@ -86,11 +86,15 @@ namespace Browser
 		message_loop.reset(new MessageLoop);
 
 		// Create the first window.
-		context->GetBrowserDlgManager()->CreateBrowserDlg(
+		BrowserDlg* pDlg = context->GetBrowserDlgManager()->CreateBrowserDlg(
 			NULL,
 			true,             // Show controls.
 			CefRect(),        // Use default system size.
 			std::wstring());   // Use default URL.
+
+		if(pDlg) {
+			pDlg->CenterWindow();
+		}
 
 		//DuiLib::CPaintManagerUI::MessageLoop();
 		result = message_loop->Run();
