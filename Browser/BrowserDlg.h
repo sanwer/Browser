@@ -2,12 +2,13 @@
 #define __BROWSER_WND_H__
 #pragma once
 #include "MessageLoop.h"
+#include "BrowserWindow.h"
 #include "ClientApp.h"
 #include "BrowserUI.h"
 
 namespace Browser
 {
-	class BrowserDlg : public DuiLib::WindowImplBase, public Browser::BrowserCtrl::Delegate, public base::RefCountedThreadSafe<BrowserDlg, Browser::DeleteOnMainThread>
+	class BrowserDlg : public DuiLib::WindowImplBase, public Browser::BrowserWindow::Delegate, public base::RefCountedThreadSafe<BrowserDlg, Browser::DeleteOnMainThread>
 	{
 	public:
 		class Delegate {
@@ -20,6 +21,10 @@ namespace Browser
 		};
 		BrowserDlg();
 		~BrowserDlg();
+
+		// Returns the BrowserDlg associated with the specified |browser_id|. Must be
+		// called on the main thread.
+		static scoped_refptr<BrowserDlg> GetForBrowser(int browser_id);
 
 	public:
 		LPCTSTR GetWindowClassName() const;
@@ -37,13 +42,13 @@ namespace Browser
 		// BrowserWindow::Delegate methods.
 		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		void OnBrowserClosed(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnBrowserExit(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) OVERRIDE;
-		void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) OVERRIDE;
+		void OnBrowserAllClosed() OVERRIDE;
+		void OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url) OVERRIDE;
+		void OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title) OVERRIDE;
 		void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) OVERRIDE;
 		void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
 		void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) OVERRIDE;
-		void OnNewPage(const std::wstring& url) OVERRIDE;
+		void OnNewTab(CefRefPtr<CefBrowser> browser, const CefString& url) OVERRIDE;
 		void NotifyDestroyedIfDone();
 
 	private:
@@ -58,7 +63,14 @@ namespace Browser
 
 	public:
 		// BrowserDlg methods.
-		void Init(BrowserDlg::Delegate* delegate,const std::wstring& url);
+		void Init(
+			BrowserDlg::Delegate* delegate,
+			HWND hParent,
+			bool with_controls,
+			const CefRect& bounds,
+			const CefBrowserSettings& settings,
+			const CefString& url);
+
 		void InitAsPopup(
 			BrowserDlg::Delegate* delegate,
 			bool with_controls,
@@ -67,23 +79,28 @@ namespace Browser
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
 			CefBrowserSettings& settings);
+
+		void NewTab(const std::wstring& url);
+
 		CefRefPtr<CefBrowser> GetBrowser();
+		CefWindowHandle GetWindowHandle();
 		void LoadURL(const CefString& url);
 
 	private:
-		void CreateBrowserWindow(CefRefPtr<CefBrowser> browser, const CefBrowserSettings& settings);
+		void CreateBrowserWindow(const std::string& startup_url);
+		void CreateBrowserDlg(const CefBrowserSettings& settings);
 
+		HWND m_hParent;
 		bool m_bWithControls;
-		RECT m_rcBrowser;
-		bool m_bWithOsr;
 		bool m_bIsPopup;
+		RECT m_rcStart;
 		bool m_bInitialized;
 		bool m_bWindowDestroyed;
 		bool m_bBrowserDestroyed;
-		int m_nBrowserSelectedId;
-		Browser::BrowserUI* m_pBrowser;
+		int m_nCurBrowserId;
+		Browser::BrowserUI* m_pBrowserUI;
 		BrowserDlg::Delegate* m_Delegate;
-		scoped_ptr<Browser::BrowserCtrl> m_BrowserCtrl;
+		scoped_ptr<Browser::BrowserWindow> m_BrowserCtrl;
 	};
 }
 #endif

@@ -24,16 +24,10 @@
     <ClCompile Include="MainDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ClientApp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="ClientHandler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MessageLoop.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BrowserManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="BrowserDlg.cpp">
@@ -45,7 +39,31 @@
     <ClCompile Include="ResourceUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ResponseFilter.cpp">
+    <ClCompile Include="ClientRenderDelegate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientAppRenderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientSwitches.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientAppBrowser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientApp.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MainContext.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BrowserDlgManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TempWindow.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BrowserWindow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,16 +77,10 @@
     <ClInclude Include="BrowserUI.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ClientApp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ClientHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MessageLoop.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BrowserManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="BrowserDlg.h">
@@ -83,7 +95,31 @@
     <ClInclude Include="ResourceUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ResponseFilter.h">
+    <ClInclude Include="ClientRenderDelegate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientAppRenderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSwitches.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientAppBrowser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MainContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BrowserDlgManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TempWindow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BrowserWindow.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,6 +131,9 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="Skin.zip">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="binding.html">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>

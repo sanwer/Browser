@@ -151,38 +151,51 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BrowserManager.cpp" />
+    <ClCompile Include="BrowserDlgManager.cpp" />
     <ClCompile Include="BrowserUI.cpp" />
     <ClCompile Include="BrowserDlg.cpp" />
+    <ClCompile Include="BrowserWindow.cpp" />
     <ClCompile Include="ClientApp.cpp" />
+    <ClCompile Include="ClientAppBrowser.cpp" />
+    <ClCompile Include="ClientAppRenderer.cpp" />
     <ClCompile Include="ClientHandler.cpp" />
+    <ClCompile Include="ClientRenderDelegate.cpp" />
     <ClCompile Include="ClientRunner.cpp" />
+    <ClCompile Include="ClientSwitches.cpp" />
+    <ClCompile Include="MainContext.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="ResourceUtil.cpp" />
-    <ClCompile Include="ResponseFilter.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TempWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BrowserManager.h" />
+    <ClInclude Include="BrowserDlgManager.h" />
     <ClInclude Include="BrowserUI.h" />
     <ClInclude Include="BrowserDlg.h" />
+    <ClInclude Include="BrowserWindow.h" />
     <ClInclude Include="ClientApp.h" />
+    <ClInclude Include="ClientAppBrowser.h" />
+    <ClInclude Include="ClientAppRenderer.h" />
     <ClInclude Include="ClientHandler.h" />
+    <ClInclude Include="ClientRenderDelegate.h" />
     <ClInclude Include="ClientRunner.h" />
+    <ClInclude Include="ClientSwitches.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="MainContext.h" />
     <ClInclude Include="MessageLoop.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceUtil.h" />
-    <ClInclude Include="ResponseFilter.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TempWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="binding.html" />
     <None Include="Browser.ico" />
     <None Include="Logo.png" />
     <None Include="Skin.zip" />

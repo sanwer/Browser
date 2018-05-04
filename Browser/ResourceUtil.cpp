@@ -33,6 +33,8 @@ namespace Browser
 				int id;
 			} resource_map[] = {
 				{"Logo.png", IDS_LOGO_PNG},
+				{"binding.html", IDS_BINDING_HTML},
+				{"response_filter.html", IDS_RESPONSE_FILTER_HTML},
 			};
 
 			for (int i = 0; i < sizeof(resource_map)/sizeof(_resource_map); ++i) {

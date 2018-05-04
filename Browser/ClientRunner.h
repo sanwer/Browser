@@ -14,6 +14,13 @@ namespace Browser
 {
 	namespace ClientRunner
 	{
+		// Returns a data: URI with the specified contents.
+		std::string GetDataURI(const std::string& data,
+			const std::string& mime_type);
+
+		// Returns the string representation of the specified error code.
+		std::string GetErrorString(cef_errorcode_t code);
+
 		// Set up the resource manager for tests.
 		void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager);
 

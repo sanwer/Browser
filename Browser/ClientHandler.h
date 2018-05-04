@@ -24,18 +24,19 @@ namespace Browser
 		, public CefRequestHandler		// ‰Ø¿¿∆˜«Î«Û¥¶¿Ì
 	{
 	public:
-		friend class BrowserCtrl;
+		friend class BrowserWindow;
 		class Delegate {
 		public:
 			virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser) = 0;
 			virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser) = 0;
 			virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser) = 0;
-			virtual void OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url) = 0;
-			virtual void OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title) = 0;
+			virtual void OnBrowserAllClosed() = 0;
+			virtual void OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url) = 0;
+			virtual void OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title) = 0;
 			virtual void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) = 0;
 			virtual void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) = 0;
 			virtual void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) = 0;
-			virtual void OnNewPage(const std::wstring& url) = 0;
+			virtual void OnNewTab(CefRefPtr<CefBrowser> browser, const CefString& url) = 0;
 
 		protected:
 			virtual ~Delegate() {}
@@ -43,7 +44,7 @@ namespace Browser
 		typedef std::set<CefMessageRouterBrowserSide::Handler*> MessageHandlerSet;
 
 	public:
-		ClientHandler(Delegate* delegate);
+		ClientHandler(Delegate* delegate, const std::string& startup_url);
 		void DetachDelegate();
 
 		//////////////////////////////////////////////////////////////////////////
@@ -195,7 +196,7 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			const CefString& target_url,
-			CefRequestHandler::WindowOpenDisposition target_disposition,
+			cef_window_open_disposition_t target_disposition,
 			bool user_gesture) OVERRIDE;
 		cef_return_value_t OnBeforeResourceLoad(
 			CefRefPtr<CefBrowser> browser,
@@ -220,18 +221,21 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			const CefString& url,
 			bool& allow_os_execution) OVERRIDE;
-		//bool OnCertificateError(
-		//	CefRefPtr<CefBrowser> browser,
-		//	ErrorCode cert_error,
-		//	const CefString& request_url,
-		//	CefRefPtr<CefSSLInfo> ssl_info,
-		//	CefRefPtr<CefRequestCallback> callback) OVERRIDE;
+		bool OnCertificateError(
+			CefRefPtr<CefBrowser> browser,
+			ErrorCode cert_error,
+			const CefString& request_url,
+			CefRefPtr<CefSSLInfo> ssl_info,
+			CefRefPtr<CefRequestCallback> callback) OVERRIDE;
 		void OnRenderProcessTerminated(
 			CefRefPtr<CefBrowser> browser,
 			TerminationStatus status) OVERRIDE;
 
 		// Returns the Delegate.
 		Delegate* delegate() const { return m_Delegate; }
+
+		// Returns the startup URL.
+		std::string StartupUrl() const { return m_sStartupUrl; }
 
 	private:
 		bool CreatePopupWindow(
@@ -251,6 +255,7 @@ namespace Browser
 		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosing(CefRefPtr<CefBrowser> browser);
 		void NotifyBrowserClosed(CefRefPtr<CefBrowser> browser);
+		void NotifyBrowserAllClosed();
 		void NotifyAddress(CefRefPtr<CefBrowser> browser, const CefString& url);
 		void NotifyTitle(CefRefPtr<CefBrowser> browser, const CefString& title);
 		void NotifyFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen);
@@ -271,6 +276,22 @@ namespace Browser
 
 		// Set of Handlers registered with the message router.
 		MessageHandlerSet m_MessageHandlerSet;
+
+		// True if this handler uses off-screen rendering.
+		//const bool is_osr_;
+
+		// The startup URL.
+		const std::string m_sStartupUrl;
+
+		// Console logging state.
+		const std::string m_sConsoleLogFile;
+		bool m_bFirstConsoleMessage;
+
+		// True if an editable field currently has focus.
+		bool m_bFocusOnEditableField;
+
+		// True if mouse cursor change is disabled.
+		bool m_bMouseCursorChangeDisabled;
 
 		IMPLEMENT_REFCOUNTING(ClientHandler);
 		//IMPLEMENT_LOCKING(ClientHandler);

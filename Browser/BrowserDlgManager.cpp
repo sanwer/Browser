@@ -1,27 +1,17 @@
 #include "stdafx.h"
-#include "BrowserManager.h"
+#include "BrowserDlgManager.h"
 #include <sstream>
 #include "include/base/cef_bind.h"
 #include "include/base/cef_logging.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
+#include "MainContext.h"
+#include "ClientSwitches.h"
 
 namespace Browser
 {
-	BrowserManager* gBrowserManager = NULL;
-
-	BrowserManager* BrowserManager::Get() {
-		DCHECK(gBrowserManager);
-		return gBrowserManager;
-	}
-
-	namespace Switches {
-		const char kCachePath[] = "cache-path";
-		const char kRequestContextPerBrowser[] = "request-context-per-browser";
-		const char kRequestContextSharedCache[] = "request-context-shared-cache";
-	}
-
-	namespace {
+	namespace
+	{
 		class ClientRequestContextHandler : public CefRequestContextHandler
 		{
 		public:
@@ -45,87 +35,31 @@ namespace Browser
 		};
 	}
 
-	namespace
-	{
-		const TCHAR kWndClass[] = L"Client_TempWindow";
-		HWND CreateTempWindow()
-		{
-			HINSTANCE hInstance = ::GetModuleHandle(NULL);
-
-			WNDCLASSEX wc = {0};
-			wc.cbSize = sizeof(wc);
-			wc.lpfnWndProc = DefWindowProc;
-			wc.hInstance = hInstance;
-			wc.lpszClassName = kWndClass;
-			RegisterClassEx(&wc);
-
-			// Create a 1x1 pixel hidden window.
-			return CreateWindow(kWndClass, 0,
-				WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-				0, 0, 1, 1,
-				NULL, NULL, hInstance, NULL);
-		}
-		TempWindow* g_temp_window = NULL;
-	}
-
-	TempWindow::TempWindow() : m_hWnd(NULL) {
-		DCHECK(!g_temp_window);
-		g_temp_window = this;
-		m_hWnd = CreateTempWindow();
-		CHECK(m_hWnd);
-	}
-
-	TempWindow::~TempWindow() {
-		g_temp_window = NULL;
-		DCHECK(m_hWnd);
-		DestroyWindow(m_hWnd);
-	}
-
-	// static
-	CefWindowHandle TempWindow::GetWindowHandle()
-	{
-		DCHECK(g_temp_window);
-		return g_temp_window->m_hWnd;
-	}
-
-	BrowserManager::BrowserManager(bool terminate_when_all_windows_closed)
-		: m_bAllWindowsClosed(terminate_when_all_windows_closed)
+	BrowserDlgManager::BrowserDlgManager(bool terminate_when_all_windows_closed)
+		: m_bTerminateWhenAllWindowsClosed(terminate_when_all_windows_closed)
 	{
 		CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
-		DCHECK(!gBrowserManager);
-		gBrowserManager = this;
 		DCHECK(command_line.get());
 		m_bRequestContextPerBrowser = command_line->HasSwitch(Switches::kRequestContextPerBrowser);
 		m_bRequestContextSharedBrowser = command_line->HasSwitch(Switches::kRequestContextSharedCache);
-
-		sHomepage = _T("https://www.hao123.com/");
-
 	}
 
-	BrowserManager::~BrowserManager() {
+	BrowserDlgManager::~BrowserDlgManager() {
 		// All root windows should already have been destroyed.
-		DCHECK(m_BrowserWindowSet.empty());
+		DCHECK(m_BrowserDlgSet.empty());
 	}
 
-	std::string BrowserManager::GetDownloadPath(const std::string& file_name) {
-		TCHAR szFolderPath[MAX_PATH];
-		std::string path;
-
-		// Save the file in the user's "My Documents" folder.
-		if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
-			NULL, 0, szFolderPath))) {
-				path = CefString(szFolderPath);
-				path += "\\" + file_name;
-		}
-
-		return path;
-	}
-
-	scoped_refptr<BrowserDlg> BrowserManager::CreateRootWindow()
+	scoped_refptr<BrowserDlg> BrowserDlgManager::CreateBrowserDlg(
+		HWND hParent,
+		bool with_controls,
+		const CefRect& bounds,
+		const std::wstring& url)
 	{
-		scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
+		CefBrowserSettings settings;
+		MainContext::Get()->PopulateBrowserSettings(&settings);
+		scoped_refptr<BrowserDlg> pDlg = new BrowserDlg();
 		if(pDlg){
-			pDlg->Init(this, GetHomepage());
+			pDlg->Init(this, hParent, with_controls, bounds, settings, url.empty() ? MainContext::Get()->GetMainURL() : url);
 
 			// Store a reference to the root window on the main thread.
 			OnRootWindowCreated(pDlg);
@@ -134,13 +68,14 @@ namespace Browser
 		return pDlg;
 	}
 
-	scoped_refptr<BrowserDlg> BrowserManager::CreateRootWindowAsPopup(
+	scoped_refptr<BrowserDlg> BrowserDlgManager::CreateBrowserDlgAsPopup(
 		bool with_controls,
 		const CefString& target_url,
 		const CefPopupFeatures& popupFeatures,
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
 		CefBrowserSettings& settings) {
+			MainContext::Get()->PopulateBrowserSettings(&settings);
 			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
 			if(pDlg){
 				pDlg->InitAsPopup(this, with_controls, target_url, popupFeatures, windowInfo, client, settings);
@@ -152,12 +87,12 @@ namespace Browser
 			return pDlg;
 	}
 
-	scoped_refptr<BrowserDlg> BrowserManager::GetWindowForBrowser(
+	scoped_refptr<BrowserDlg> BrowserDlgManager::GetWindowForBrowser(
 		int browser_id) {
 			REQUIRE_MAIN_THREAD();
 
-			BrowserWindowSet::const_iterator it = m_BrowserWindowSet.begin();
-			for (; it != m_BrowserWindowSet.end(); ++it) {
+			BrowserDlgSet::const_iterator it = m_BrowserDlgSet.begin();
+			for (; it != m_BrowserDlgSet.end(); ++it) {
 				CefRefPtr<CefBrowser> browser = (*it)->GetBrowser();
 				if (browser.get() && browser->GetIdentifier() == browser_id)
 					return *it;
@@ -165,37 +100,37 @@ namespace Browser
 			return NULL;
 	}
 
-	void BrowserManager::CloseAllWindows(bool force) {
+	void BrowserDlgManager::CloseAllWindows(bool force) {
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
 			MAIN_POST_CLOSURE(
-				base::Bind(&BrowserManager::CloseAllWindows, base::Unretained(this),
+				base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this),
 				force));
 			return;
 		}
 
-		if (m_BrowserWindowSet.empty())
+		if (m_BrowserDlgSet.empty())
 			return;
 
-		BrowserWindowSet::const_iterator it = m_BrowserWindowSet.begin();
-		for (; it != m_BrowserWindowSet.end(); ++it)
+		BrowserDlgSet::const_iterator it = m_BrowserDlgSet.begin();
+		for (; it != m_BrowserDlgSet.end(); ++it)
 			(*it)->Close(force);
 	}
 
-	void BrowserManager::OnRootWindowCreated(
+	void BrowserDlgManager::OnRootWindowCreated(
 		scoped_refptr<BrowserDlg> pDlg) {
 			if (!CURRENTLY_ON_MAIN_THREAD()) {
 				// Execute this method on the main thread.
 				MAIN_POST_CLOSURE(
-					base::Bind(&BrowserManager::OnRootWindowCreated,
+					base::Bind(&BrowserDlgManager::OnRootWindowCreated,
 					base::Unretained(this), pDlg));
 				return;
 			}
 
-			m_BrowserWindowSet.insert(pDlg);
+			m_BrowserDlgSet.insert(pDlg);
 	}
 
-	CefRefPtr<CefRequestContext> BrowserManager::GetRequestContext()
+	CefRefPtr<CefRequestContext> BrowserDlgManager::GetRequestContext()
 	{
 		REQUIRE_MAIN_THREAD();
 
@@ -231,21 +166,21 @@ namespace Browser
 		return m_SharedRequestContext;
 	}
 
-	void BrowserManager::OnExit(BrowserDlg* pDlg) {
+	void BrowserDlgManager::OnExit(BrowserDlg* pDlg) {
 		REQUIRE_MAIN_THREAD();
 
 		CloseAllWindows(false);
 	}
 
-	void BrowserManager::OnRootWindowDestroyed(BrowserDlg* pDlg) {
+	void BrowserDlgManager::OnRootWindowDestroyed(BrowserDlg* pDlg) {
 		REQUIRE_MAIN_THREAD();
 
-		BrowserWindowSet::iterator it = m_BrowserWindowSet.find(pDlg);
-		DCHECK(it != m_BrowserWindowSet.end());
-		if (it != m_BrowserWindowSet.end())
-			m_BrowserWindowSet.erase(it);
+		BrowserDlgSet::iterator it = m_BrowserDlgSet.find(pDlg);
+		DCHECK(it != m_BrowserDlgSet.end());
+		if (it != m_BrowserDlgSet.end())
+			m_BrowserDlgSet.erase(it);
 
-		if (m_bAllWindowsClosed && m_BrowserWindowSet.empty()) {
+		if (m_bTerminateWhenAllWindowsClosed && m_BrowserDlgSet.empty()) {
 			// Quit the main message loop after all windows have closed.
 			MessageLoop::Get()->Quit();
 			//PostQuitMessage(0);

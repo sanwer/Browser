@@ -4,173 +4,11 @@
 #include "BrowserUI.h"
 #include "BrowserDlg.h"
 #include "MessageLoop.h"
-#include "BrowserManager.h"
+#include "BrowserDlgManager.h"
+#include "MainContext.h"
 
 namespace Browser
 {
-	BrowserCtrl::BrowserCtrl(Delegate* delegate)
-		: m_Delegate(delegate)
-	{
-		DCHECK(m_Delegate);
-		m_ClientHandler = new ClientHandler(this);
-	}
-
-	void BrowserCtrl::CreateBrowser(
-		CefWindowHandle parent_handle,
-		const std::wstring& url,
-		const CefRect& rect,
-		const CefBrowserSettings& settings,
-		CefRefPtr<CefRequestContext> request_context)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		CefWindowInfo window_info;
-		RECT wnd_rect = {rect.x, rect.y, rect.x + rect.width, rect.y + rect.height};
-		window_info.SetAsChild(parent_handle, wnd_rect);
-
-		CefBrowserHost::CreateBrowser(window_info, m_ClientHandler,
-			url, settings, request_context);
-	}
-
-	void BrowserCtrl::GetPopupConfig(CefWindowHandle temp_handle,
-		CefWindowInfo& windowInfo,
-		CefRefPtr<CefClient>& client,
-		CefBrowserSettings& settings)
-	{
-		// Note: This method may be called on any thread.
-		// The window will be properly sized after the browser is created.
-		windowInfo.SetAsChild(temp_handle, RECT());
-		client = m_ClientHandler;
-	}
-
-	void BrowserCtrl::ShowPopup(CefRefPtr<CefBrowser> browser, CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		HWND hWnd = browser->GetHost()->GetWindowHandle();
-		if (hWnd) {
-			SetParent(hWnd, hParentWnd);
-			SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
-			::ShowWindow(hWnd, SW_SHOW);
-		}
-	}
-
-	void BrowserCtrl::Show(int nBrowserId, int x, int y, size_t width, size_t height)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_ClientHandler->m_BrowserList.begin();
-		for (; item != m_ClientHandler->m_BrowserList.end(); item++)
-		{
-			if (*item){
-				HWND hWnd = (*item)->GetHost()->GetWindowHandle();
-				if ((*item)->GetIdentifier() == nBrowserId){
-					if (hWnd){
-						SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
-						::ShowWindow(hWnd, SW_SHOW);
-						(*item)->GetHost()->SetFocus(true);
-					}
-				}else{
-					if (hWnd){
-						SetWindowPos(hWnd, NULL,0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
-					}
-				}
-			}
-		}
-	}
-
-	void BrowserCtrl::SetFocus(int nBrowserId, bool focus)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		CefRefPtr<CefBrowser> pBrowser = GetBrowser(nBrowserId);
-		if (pBrowser)
-			pBrowser->GetHost()->SetFocus(focus);
-	}
-
-	CefWindowHandle BrowserCtrl::GetWindowHandle(int nBrowserId) const
-	{
-		REQUIRE_MAIN_THREAD();
-
-		CefRefPtr<CefBrowser> pBrowser = GetBrowser(nBrowserId);
-		if (pBrowser)
-			return pBrowser->GetHost()->GetWindowHandle();
-		return NULL;
-	}
-
-	CefRefPtr<CefBrowser> BrowserCtrl::GetBrowser(int nBrowserId) const
-	{
-		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_ClientHandler->m_BrowserList.begin();
-		for (; item != m_ClientHandler->m_BrowserList.end(); item++)
-		{
-			if ((*item)->GetIdentifier() == nBrowserId){
-				return (*item);
-			}
-		}
-		return NULL;
-	}
-
-	void BrowserCtrl::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		m_Delegate->OnBrowserCreated(browser);
-	}
-
-	void BrowserCtrl::OnBrowserClosing(CefRefPtr<CefBrowser> browser)
-	{
-		REQUIRE_MAIN_THREAD();
-	}
-
-	void BrowserCtrl::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
-	{
-		REQUIRE_MAIN_THREAD();
-
-		m_Delegate->OnBrowserClosed(browser);
-
-		if(m_ClientHandler->m_BrowserList.empty()){
-			m_ClientHandler->DetachDelegate();
-			m_ClientHandler = NULL;
-
-			m_Delegate->OnBrowserExit(browser);
-		}
-	}
-
-	void BrowserCtrl::OnSetAddress(CefRefPtr<CefBrowser> browser, const std::wstring& url)
-	{
-		REQUIRE_MAIN_THREAD();
-		m_Delegate->OnSetAddress(browser, url);
-	}
-
-	void BrowserCtrl::OnSetTitle(CefRefPtr<CefBrowser> browser, const std::wstring& title)
-	{
-		REQUIRE_MAIN_THREAD();
-		m_Delegate->OnSetTitle(browser, title);
-	}
-
-	void BrowserCtrl::OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen)
-	{
-		REQUIRE_MAIN_THREAD();
-		m_Delegate->OnSetFullscreen(browser, fullscreen);
-	}
-
-	void BrowserCtrl::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward)
-	{
-		REQUIRE_MAIN_THREAD();
-		m_Delegate->OnSetLoadingState(browser, isLoading, canGoBack, canGoForward);
-	}
-
-	void BrowserCtrl::OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions)
-	{
-		REQUIRE_MAIN_THREAD();
-		m_Delegate->OnSetDraggableRegions(browser, regions);
-	}
-
-	void BrowserCtrl::OnNewPage(const std::wstring& url)
-	{
-		m_Delegate->OnNewPage(url);
-	}
-
 	BrowserUI::BrowserUI(BrowserDlg* pParent, HWND hParentWnd)
 		: m_pParent(pParent),
 		m_hParentWnd(hParentWnd),
@@ -195,48 +33,36 @@ namespace Browser
 	{
 		DuiLib::CDuiRect rcPos = rc;
 		if (m_pCtrl && !rcPos.IsNull()) {
-			m_pCtrl->Show(m_nSelectedId, rc.left, rc.top, rc.right - rc.left,rc.bottom - rc.top);
+			m_pCtrl->SetBounds(m_nSelectedId, rc.left, rc.top, rc.right - rc.left,rc.bottom - rc.top);
 		}
 		CControlUI::SetPos(rc, bNeedInvalidate);
 	}
 
-	void BrowserUI::SetCtrl(BrowserCtrl* pCtrl)
+	void BrowserUI::SetCtrl(BrowserWindow* pCtrl)
 	{
 		m_pCtrl = pCtrl;
 	}
 
-	void BrowserUI::NewPage(const std::wstring& url, bool bPopup)
+	void BrowserUI::CreateBrowser(const std::wstring& url, CefRefPtr<CefRequestContext> request_context)
 	{
 		if(m_pCtrl){
 			CefBrowserSettings settings;
 			RECT rcPos = GetPos();
 			CefRect cef_rect(rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
-			if(bPopup){
-				if (m_pCtrl){
-					CefRefPtr<CefBrowser> pBrowser = m_pCtrl->GetBrowser(m_nSelectedId);
-					if(pBrowser){
-						CefRefPtr<CefFrame> pFrame = pBrowser->GetMainFrame();
-						if (pFrame){
-							pFrame->LoadURL(url);
-						}
-					}
-				}
-			}else{
-				m_pCtrl->CreateBrowser(m_hParentWnd, url, cef_rect, settings, BrowserManager::Get()->GetRequestContext());
-			}
+			m_pCtrl->CreateBrowser(m_hParentWnd, url, cef_rect, settings, request_context);
 		}
 	}
 
-	void BrowserUI::ShowPage(int nBrowserId)
+	void BrowserUI::ShowBrowser(int nBrowserId)
 	{
 		m_nSelectedId = nBrowserId;
 		if(m_pCtrl){
 			RECT rcPos = GetPos();
-			m_pCtrl->Show(nBrowserId, rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
+			m_pCtrl->ShowBrowser(nBrowserId, rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
 		}
 	}
 
-	void BrowserUI::DelPage(int nBrowserId)
+	void BrowserUI::CloseBrowser(int nBrowserId)
 	{
 		if(m_pCtrl){
 			CefRefPtr<CefBrowser> pBrowser = m_pCtrl->GetBrowser(nBrowserId);
@@ -255,7 +81,7 @@ namespace Browser
 	}
 
 	IMPLEMENT_DUICONTROL(TitleUI)
-	TitleUI::TitleUI() : m_bSelected(false), m_uButtonState(0), m_dwSelectedBkColor(0),
+		TitleUI::TitleUI() : m_bSelected(false), m_uButtonState(0), m_dwSelectedBkColor(0),
 		m_uTextStyle(DT_VCENTER | DT_SINGLELINE), m_iFont(-1), m_dwTextColor(0), m_dwDisabledTextColor(0)
 	{
 		::ZeroMemory(&m_rcTextPadding, sizeof(m_rcTextPadding));
