@@ -120,6 +120,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Lib\;..\..\libcef\Lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DuiLib.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
+    </PreBuildEvent>
     <ResourceCompile>
       <AdditionalIncludeDirectories>.;..\..\libcef</AdditionalIncludeDirectories>
     </ResourceCompile>
@@ -136,6 +139,9 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
+    </PreBuildEvent>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
