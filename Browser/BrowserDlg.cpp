@@ -309,22 +309,20 @@ namespace Browser
 				sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
 				pTitle->ApplyAttributeList(sBuffer);
 			}else{
-				if(wcsnicmp(url.c_str(),L"chrome-devtools:",16)!=0){
 				TitleUI* pTitle = new TitleUI;
 				pTitle->SetTag(nBrowserId);
 				pTitle->SetUserData(url.c_str());
 				uiTabs->AddAt(pTitle, nTabsCount - 1);
-					sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
-					pTitle->ApplyAttributeList(sBuffer);
-					CControlUI* pControl = new CControlUI;
-					CButtonUI* pClose = new CButtonUI;
-					pTitle->Add(pControl);
-					pTitle->Add(pClose);
-					sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
-					pClose->ApplyAttributeList(sBuffer);
-					pTitle->Selected(true);
-					editUrl->SetText(url.c_str());
-				}
+				sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
+				pTitle->ApplyAttributeList(sBuffer);
+				CControlUI* pControl = new CControlUI;
+				CButtonUI* pClose = new CButtonUI;
+				pTitle->Add(pControl);
+				pTitle->Add(pClose);
+				sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
+				pClose->ApplyAttributeList(sBuffer);
+				pTitle->Selected(true);
+				editUrl->SetText(url.c_str());
 			}
 		}
 	}

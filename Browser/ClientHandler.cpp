@@ -222,8 +222,11 @@ namespace Browser
 	void ClientHandler::OnAddressChange(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, const CefString& url)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		if (frame->IsMain())
+		if (frame->IsMain() && !url.empty()){
+			if(_wcsnicmp(url.c_str(),L"chrome-devtools:",16)==0)
+				return;
 			NotifyAddress(browser, url);
+		}
 	}
 
 	void ClientHandler::OnTitleChange(CefRefPtr<CefBrowser> browser, const CefString& title)
@@ -777,6 +780,10 @@ namespace Browser
 
 	void ClientHandler::NotifyNewTab(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
+		if(url.empty())
+			return;
+		if(_wcsnicmp(url.c_str(),L"chrome-devtools:",16)==0)
+			return;
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
 			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyNewTab, this, browser, url));
@@ -784,9 +791,7 @@ namespace Browser
 		}
 
 		if (m_Delegate){
-			if(_wcsnicmp(url.c_str(),L"chrome-devtools:",16)!=0){
-				m_Delegate->OnNewTab(browser, url);
-			}
+			m_Delegate->OnNewTab(browser, url);
 		}
 	}
 }
