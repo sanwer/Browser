@@ -13,11 +13,6 @@ namespace Browser
 		const int TitleHeight = 32;
 		const int ToolbarHeight = 28;
 	}
-	// static
-	scoped_refptr<BrowserDlg> BrowserDlg::GetForBrowser(int browser_id)
-	{
-		return MainContext::Get()->GetBrowserDlgManager()->GetWindowForBrowser(browser_id);
-	}
 
 	BrowserDlg::BrowserDlg()
 		: m_Delegate(NULL),
@@ -29,9 +24,10 @@ namespace Browser
 		m_bInitialized(false),
 		m_bWindowDestroyed(false),
 		m_bBrowserDestroyed(false),
-		m_nCurBrowserId(-1)
+		m_nCurBrowserId(0)
 	{
 		uiTabs = NULL;
+		pTitle = NULL;
 		tabNew = NULL;
 		uiToolbar = NULL;
 		btnBackward = NULL;
@@ -42,6 +38,7 @@ namespace Browser
 
 	BrowserDlg::~BrowserDlg()
 	{
+		REQUIRE_MAIN_THREAD();
 		DCHECK(m_bWindowDestroyed);
 		DCHECK(m_bBrowserDestroyed);
 		//PostQuitMessage(0);
@@ -69,16 +66,20 @@ namespace Browser
 		}
 		
 		if (m_bWithControls) {
-			tabNew->SetVisible(true);
 			uiToolbar->SetVisible(true);
+			if(btnBackward)
+				btnBackward->SetEnabled(false);
+			if(btnForward)
+				btnForward->SetEnabled(false);
 		}else{
 			uiToolbar->SetVisible(false);
 		}
-
-		if(btnBackward)
-			btnBackward->SetEnabled(false);
-		if(btnForward)
-			btnForward->SetEnabled(false);
+		if (m_bIsPopup) {
+			tabNew->SetVisible(false);
+			uiToolbar->SetVisible(false);
+		} else {
+			tabNew->SetVisible(true);
+		}
 	}
 
 	void BrowserDlg::OnFinalMessage(HWND hWnd)
@@ -114,9 +115,9 @@ namespace Browser
 		{
 			if(m_pBrowserUI == NULL){
 				m_pBrowserUI = new Browser::BrowserUI(this, m_hWnd);
-				if (m_BrowserCtrl.get()){
-					m_pBrowserUI->SetCtrl(m_BrowserCtrl.get());
-				}
+			}
+			if (m_pBrowserUI != NULL && m_BrowserCtrl.get() != NULL){
+				m_pBrowserUI->SetCtrl(m_BrowserCtrl.get());
 			}
 			pUI = m_pBrowserUI;
 		}
@@ -175,7 +176,7 @@ namespace Browser
 					browser->GoForward();
 				}
 			}else if (_tcsicmp(sCtrlName,_T("tabNew")) == 0){
-				NewTab(MainContext::Get()->GetMainURL());//about:blank
+				NewTab(L"about:blank");
 			}else if (_tcsnicmp(sCtrlName,_T("tabClose"),8) == 0){
 				CDuiString sBuffer = sCtrlName;
 				sBuffer.Replace(_T("tabClose"),_T(""));
@@ -205,8 +206,6 @@ namespace Browser
 						}
 					}
 				}
-			}else if (_tcsnicmp(sCtrlName,_T("closebtn"),8) == 0){
-				MainContext::Get()->GetBrowserDlgManager()->CloseAllWindows(true);
 			}
 		}
 		else if (_tcsicmp(msg.sType,DUI_MSGTYPE_RETURN) == 0)
@@ -242,6 +241,11 @@ namespace Browser
 	void BrowserDlg::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
 		REQUIRE_MAIN_THREAD();
+		
+		int nBrowserId = browser->GetIdentifier();
+		if(m_nCurBrowserId != nBrowserId){
+			m_nCurBrowserId = nBrowserId;
+		}
 
 		if (m_bIsPopup) {
 			// For popup browsers create the root window once the browser has been created.
@@ -250,7 +254,7 @@ namespace Browser
 			if (m_pBrowserUI){
 				RECT rcPos = m_pBrowserUI->GetPos();
 				if(m_BrowserCtrl){
-					m_BrowserCtrl->SetBounds(browser->GetIdentifier(), rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
+					m_BrowserCtrl->ShowBrowser(m_nCurBrowserId,rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
 				}
 			}
 		}
@@ -280,10 +284,14 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
+		REQUIRE_MAIN_THREAD();
 		CDuiString sBuffer;
+		CDuiString sUrl;
 		bool bAddTab = true;
 		int nTabsCount = uiTabs->GetCount();
 		int nBrowserId = browser->GetIdentifier();
+		if(url.length() > 0)
+			sUrl = url.c_str();
 		for (int idx = 0; idx < nTabsCount; idx++)
 		{
 			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
@@ -291,27 +299,29 @@ namespace Browser
 				continue;
 			if (pTitle->GetTag() == nBrowserId){
 				bAddTab = false;
-				pTitle->SetUserData(url.c_str());
+				pTitle->SetUserData(sUrl);
 				CDuiString sBuffer = pTitle->GetText();
 				if(sBuffer.GetLength() == 0)
-					pTitle->SetText(url.c_str());
+					pTitle->SetText(sUrl);
 				break;
 			}
 		}
 		if (nBrowserId == m_nCurBrowserId) {
-			editUrl->SetText(url.c_str());
+			editUrl->SetText(sUrl);
 		}
 		if(bAddTab){
 			if(m_bIsPopup){
-				CLabelUI* pTitle = new CLabelUI;
-				pTitle->SetTag(nBrowserId);
+				if(pTitle == NULL){
+					pTitle = new CLabelUI;
+				}
+				pTitle->SetText(sUrl);
 				uiTabs->AddAt(pTitle, nTabsCount - 1);
 				sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
 				pTitle->ApplyAttributeList(sBuffer);
 			}else{
 				TitleUI* pTitle = new TitleUI;
 				pTitle->SetTag(nBrowserId);
-				pTitle->SetUserData(url.c_str());
+				pTitle->SetUserData(sUrl);
 				uiTabs->AddAt(pTitle, nTabsCount - 1);
 				sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
 				pTitle->ApplyAttributeList(sBuffer);
@@ -322,35 +332,54 @@ namespace Browser
 				sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
 				pClose->ApplyAttributeList(sBuffer);
 				pTitle->Selected(true);
-				editUrl->SetText(url.c_str());
+				editUrl->SetText(sUrl);
 			}
 		}
 	}
 
 	void BrowserDlg::OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title)
 	{
+		REQUIRE_MAIN_THREAD();
+		CDuiString sTitle;
+		bool bAddTab = true;
 		int nTabsCount = uiTabs->GetCount();
 		int nBrowserId = browser->GetIdentifier();
-		for (int idx = 0; idx < nTabsCount; idx++)
-		{
-			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
-			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
-				continue;
-			if (pTitle->GetTag() == nBrowserId){
-				pTitle->SetText(title.c_str());
+		if(title.length() > 0)
+			sTitle = title.c_str();
+
+		if(m_bIsPopup){
+			if(pTitle == NULL){
+				pTitle = new CLabelUI;
+			}
+			pTitle->SetText(sTitle);
+			SetWindowText(m_hWnd, sTitle);
+		}else{
+			int nTabsCount = uiTabs->GetCount();
+			int nBrowserId = browser->GetIdentifier();
+			for (int idx = 0; idx < nTabsCount; idx++)
+			{
+				DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
+				if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
+					continue;
+				if (pTitle->GetTag() == nBrowserId){
+					pTitle->SetText(sTitle);
+				}
+			}
+			if (nBrowserId == m_nCurBrowserId) {
+				SetWindowText(m_hWnd, sTitle);
 			}
 		}
-		if (m_bIsPopup || nBrowserId == m_nCurBrowserId) {
-			SetWindowText(m_hWnd, title.c_str());
-		}
+
 	}
 
 	void BrowserDlg::OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen)
 	{
+		REQUIRE_MAIN_THREAD();
 	}
 
 	void BrowserDlg::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward)
 	{
+		REQUIRE_MAIN_THREAD();
 		if(btnBackward)
 			btnBackward->SetEnabled(canGoBack);
 		if(btnForward)
@@ -370,7 +399,7 @@ namespace Browser
 	void BrowserDlg::NotifyDestroyedIfDone() {
 		// Notify once both the window and the browser have been destroyed.
 		if (m_bWindowDestroyed && m_bBrowserDestroyed)
-			m_Delegate->OnRootWindowDestroyed(this);
+			m_Delegate->OnBrowserDlgDestroyed(this);
 	}
 
 	void BrowserDlg::Init(
@@ -407,7 +436,6 @@ namespace Browser
 	void BrowserDlg::InitAsPopup(
 		BrowserDlg::Delegate* delegate,
 		bool with_controls,
-		const CefString& target_url,
 		const CefPopupFeatures& popupFeatures,
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
@@ -437,7 +465,7 @@ namespace Browser
 
 	void BrowserDlg::NewTab(const std::wstring& url)
 	{
-		if(m_BrowserCtrl && m_pBrowserUI){
+		if(m_BrowserCtrl && m_pBrowserUI && url.length() > 0){
 			RECT rcPos = m_pBrowserUI->GetPos();
 			CefRect cef_rect(rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
 			CefBrowserSettings settings;
@@ -462,8 +490,8 @@ namespace Browser
 
 	void BrowserDlg::LoadURL(const CefString& url)
 	{
-		if (m_pBrowserUI){
-			CefRefPtr<CefBrowser> pBrowser = m_pBrowserUI->GetBrowser();
+		if (m_BrowserCtrl.get() != NULL){
+			CefRefPtr<CefBrowser> pBrowser = m_BrowserCtrl->GetBrowser(m_nCurBrowserId);
 			if(pBrowser){
 				CefRefPtr<CefFrame> pFrame = pBrowser->GetMainFrame();
 				if (pFrame){
@@ -482,18 +510,18 @@ namespace Browser
 	{
 		REQUIRE_MAIN_THREAD();
 
-		HINSTANCE hInstance = GetModuleHandle(NULL);
-
 		int x, y, width, height;
 		if (::IsRectEmpty(&m_rcStart)) {
 			// Use the default window position/size.
 			x = y = width = height = CW_USEDEFAULT;
 		} else {
 			RECT rcWindow = m_rcStart;
-			rcWindow.bottom += FrameTop + TitleHeight + FrameBottom;
-			rcWindow.right += FrameLeft + FrameRight;
 			if (m_bWithControls){
-				rcWindow.bottom += ToolbarHeight;
+				rcWindow.bottom += FrameTop + TitleHeight + FrameBottom;
+				rcWindow.right += FrameLeft + FrameRight;
+				if (!m_bIsPopup){
+					rcWindow.bottom += ToolbarHeight;
+				}
 			}
 			x = rcWindow.left;
 			y = rcWindow.top;
@@ -504,29 +532,24 @@ namespace Browser
 		// Create the main window initially hidden.
 		Create(m_hParent,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,x, y, width, height,NULL);
 
-		RECT rect;
-		GetClientRect(m_hWnd, &rect);
+		::SetMenu(m_hWnd, NULL);
 
-		if (m_bWithControls) {
-			// Create the child controls.
-		} else {
-			// No controls so also remove the default menu.
-			::SetMenu(m_hWnd, NULL);
-		}
+		if(m_pBrowserUI){
+			RECT rect = m_pBrowserUI->GetPos();
 
-		if(m_bIsPopup){
-			// With popups we already have a browser window. Parent the browser window
-			// to the root window and show it in the correct location.
-			m_BrowserCtrl->ShowPopup(m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-		}else{
-			// Create the browser window.
-			CefRect cef_rect(rect.left, rect.top,
-				rect.right - rect.left,
-				rect.bottom - rect.top);
-			m_BrowserCtrl->CreateBrowser(m_hWnd, std::wstring(), cef_rect, settings, m_Delegate->GetRequestContext());
+			if(m_bIsPopup){
+				// With popups we already have a browser window. Parent the browser window
+				// to the root window and show it in the correct location.
+				m_BrowserCtrl->ShowPopup(m_nCurBrowserId, m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+				m_pBrowserUI->SetBkColor(0xFF4500FF);
+			}else{
+				// Create the browser window.
+				CefRect cef_rect(rect.left, rect.top,
+					rect.right - rect.left,
+					rect.bottom - rect.top);
+				m_BrowserCtrl->CreateBrowser(m_hWnd, std::wstring(), cef_rect, settings, m_Delegate->GetRequestContext());
+				m_pBrowserUI->SetBkColor(0xFFFFFFFF);
+			}
 		}
-		//if (m_pBrowserUI){
-		//	m_pBrowserUI->ShowPage(browser->GetIdentifier());
-		//}
 	}
 }

@@ -52,12 +52,9 @@ namespace Browser
 			CefBrowserSettings& settings);
 
 		// Show the popup window with correct parent and bounds in parent coordinates.
-		virtual void ShowPopup(CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height);
+		virtual void ShowPopup(int nBrowserId, CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height);
 
-		// Set the window bounds in parent coordinates.
-		virtual void SetBounds(int nBrowserId, int x, int y, size_t width, size_t height);
-
-		// Show the Tab
+		// Show the window.
 		virtual void ShowBrowser(int nBrowserId, int x, int y, size_t width, size_t height);
 
 		// Returns the window handle.

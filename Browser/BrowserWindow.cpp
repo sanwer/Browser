@@ -40,26 +40,16 @@ namespace Browser
 		client = m_ClientHandler;
 	}
 
-	void BrowserWindow::ShowPopup(CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height)
+	void BrowserWindow::ShowPopup(int nBrowserId, CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height)
 	{
 		REQUIRE_MAIN_THREAD();
 
-		//HWND hWnd = browser->GetHost()->GetWindowHandle();
-		//HWND hWnd = GetWindowHandle();
-		//if (hWnd) {
-		//	SetParent(hWnd, hParentWnd);
-		//	SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
-		//	::ShowWindow(hWnd, SW_SHOW);
-		//}
-	}
-
-	void BrowserWindow::SetBounds(int nBrowserId, int x, int y, size_t width, size_t height)
-	{
-		CefRefPtr<CefBrowser> pBrowser = GetBrowser(nBrowserId);
+		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		if (pBrowser){
 			HWND hWnd = pBrowser->GetHost()->GetWindowHandle();
 			if (hWnd){
-				SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
+				SetParent(hWnd, hParentWnd);
+				SetWindowPos(hWnd, NULL, x, y, static_cast<int>(width), static_cast<int>(height), SWP_NOZORDER);
 				::ShowWindow(hWnd, SW_SHOW);
 				pBrowser->GetHost()->SetFocus(true);
 			}
@@ -70,12 +60,13 @@ namespace Browser
 	{
 		REQUIRE_MAIN_THREAD();
 
+		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_ClientHandler->m_BrowserList.begin();
 		for (; item != m_ClientHandler->m_BrowserList.end(); item++)
 		{
 			if (*item){
 				HWND hWnd = (*item)->GetHost()->GetWindowHandle();
-				if ((*item)->GetIdentifier() == nBrowserId){
+				if ((*item)->IsSame(pBrowser)){
 					if (hWnd){
 						SetWindowPos(hWnd, NULL, x, y,static_cast<int>(width), static_cast<int>(height),SWP_NOZORDER);
 						::ShowWindow(hWnd, SW_SHOW);
@@ -94,7 +85,7 @@ namespace Browser
 	{
 		REQUIRE_MAIN_THREAD();
 
-		CefRefPtr<CefBrowser> pBrowser = GetBrowser(nBrowserId);
+		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		if (pBrowser)
 			return pBrowser->GetHost()->GetWindowHandle();
 		return NULL;
@@ -103,14 +94,7 @@ namespace Browser
 	CefRefPtr<CefBrowser> BrowserWindow::GetBrowser(int nBrowserId) const
 	{
 		REQUIRE_MAIN_THREAD();
-		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_ClientHandler->m_BrowserList.begin();
-		for (; item != m_ClientHandler->m_BrowserList.end(); item++)
-		{
-			if ((*item)->GetIdentifier() == nBrowserId){
-				return (*item);
-			}
-		}
-		return NULL;
+		return m_ClientHandler->GetBrowser(nBrowserId);;
 	}
 
 	void BrowserWindow::OnBrowserCreated(CefRefPtr<CefBrowser> browser)

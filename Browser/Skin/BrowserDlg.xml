@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<Window size="1080,800" sizebox="4,2,4,4" caption="0,0,0,34" mininfo="168,30" showshadow="true" shadowsize="6" shadowsharpness="255" shadowdarkness="60" shadowposition="2,2" shadowcolor="FF297DBA">
+<Window sizebox="4,2,4,4" caption="0,0,0,34" mininfo="168,30" showshadow="true" shadowsize="6" shadowsharpness="255" shadowdarkness="60" shadowposition="2,2" shadowcolor="FF297DBA">
 	<Font shared="true" id="0" name="宋体" size="14" bold="false" italic="false" default="true" />
 	<VerticalLayout name="bg" bkcolor="FF197CCC" inset="2,1,2,2">
-	<!--2F9EED/1587D8/1971AF FF3498DB/FF297DBA/FF34495E b6c1c9 -->
 		<HorizontalLayout name="uiTop" height="32">
 			<HorizontalLayout name="uiTabs" height="32" childpadding="2" inset="3,4,0,-2">
-				<Button name="tabNew" width="30" height="30" normalimage="file='btnTabNew.png' source='0,0,28,18' dest='0,5,28,23'" hotimage="file='btnTabNew.png' source='28,0,56,18' dest='0,5,28,23'" pushedimage="file='btnTabNew.png' source='56,0,84,18' dest='0,5,28,23'" />
+				<Button name="tabNew" width="30" height="30" normalimage="file='btnTabNew.png' source='0,0,28,18' dest='0,5,28,23'" hotimage="file='btnTabNew.png' source='28,0,56,18' dest='0,5,28,23'" pushedimage="file='btnTabNew.png' source='56,0,84,18' dest='0,5,28,23'" visible="false" />
 			</HorizontalLayout>
 			<Button name="minbtn" width="30" height="30" normalimage="file='btnMin.png' source='0,0,30,30'" hotimage="file='btnMin.png' source='30,0,60,30'" pushedimage="file='btnMin.png' source='60,0,90,30'" />
 			<Button name="maxbtn" width="30" height="30" normalimage="file='btnMax.png' source='0,0,30,30'" hotimage="file='btnMax.png' source='30,0,60,30'" pushedimage="file='btnMax.png' source='60,0,90,30'" />
 			<Button name="restorebtn" width="30" height="30" normalimage="file='btnRestore.png' source='0,0,30,30'" hotimage="file='btnRestore.png' source='30,0,60,30'" pushedimage="file='btnRestore.png' source='60,0,90,30'" visible="false" />
 			<Button name="closebtn" width="30" height="30" normalimage="file='btnClose.png' source='0,0,30,30'" hotimage="file='btnClose.png' source='30,0,60,30'" pushedimage="file='btnClose.png' source='60,0,90,30'" />
 		</HorizontalLayout>
-		<HorizontalLayout name="uiToolbar" bkcolor="FF3498DB" height="28" inset="0,2,0,2" borderround="2,2">
+		<HorizontalLayout name="uiToolbar" bkcolor="FF3498DB" height="28" inset="0,2,0,2" borderround="2,2" visible="false">
 			<Control width="2" />
 			<Button name="btnBackward" width="24" height="24" borderround="2,2" foreimage="file='btnBackward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />
 			<Button name="btnForward" width="24" height="24" borderround="2,2" foreimage="file='btnForward.png' dest='2,2,22,22'" hotimage="file='btnPushed.png' source='0,0,24,24' dest='0,0,24,24' corner='3,3,3,3'" />

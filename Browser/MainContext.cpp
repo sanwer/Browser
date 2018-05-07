@@ -10,7 +10,8 @@ namespace Browser
 {
 	namespace {
 		// The default URL to load in a browser window.
-		const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
+		//const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
+		const WCHAR kDefaultUrl[] = L"http://www.w3school.com.cn/jsref/met_win_open.asp";
 
 		MainContext* g_main_context = NULL;
 	}
@@ -91,10 +92,8 @@ namespace Browser
 	}
 
 	void MainContext::PopulateSettings(CefSettings* settings) {
-#if defined(OS_WIN)
 		settings->multi_threaded_message_loop =
 			m_CommandLine->HasSwitch(Switches::kMultiThreadedMessageLoop);
-#endif
 
 		CefString(&settings->cache_path) =
 			m_CommandLine->GetSwitchValue(Switches::kCachePath);

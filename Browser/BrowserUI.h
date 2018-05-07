@@ -21,15 +21,13 @@ namespace Browser
 		void SetPos(RECT rc, bool bNeedInvalidate = true);
 		void SetCtrl(BrowserWindow* pCtrl);
 		void CreateBrowser(const std::wstring& url, CefRefPtr<CefRequestContext> request_context);
-		void ShowBrowser(int nBrowserId);
-		void CloseBrowser(int nBrowserId);
-		CefRefPtr<CefBrowser> GetBrowser() const;
+		void ShowBrowser(int nBrowserId=0);
+		void CloseBrowser(int nBrowserId=0);
 
 	protected:
 		HWND m_hParentWnd;
 		BrowserDlg* m_pParent;
 		BrowserWindow* m_pCtrl;
-		int m_nSelectedId;
 
 		DISALLOW_COPY_AND_ASSIGN(BrowserUI);
 	};

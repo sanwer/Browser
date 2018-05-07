@@ -44,7 +44,8 @@ namespace Browser
 		m_bRequestContextSharedBrowser = command_line->HasSwitch(Switches::kRequestContextSharedCache);
 	}
 
-	BrowserDlgManager::~BrowserDlgManager() {
+	BrowserDlgManager::~BrowserDlgManager()
+	{
 		// All root windows should already have been destroyed.
 		DCHECK(m_BrowserDlgSet.empty());
 	}
@@ -62,7 +63,7 @@ namespace Browser
 			pDlg->Init(this, hParent, with_controls, bounds, settings, url.empty() ? MainContext::Get()->GetMainURL() : url);
 
 			// Store a reference to the root window on the main thread.
-			OnRootWindowCreated(pDlg);
+			OnBrowserDlgCreated(pDlg);
 		}
 
 		return pDlg;
@@ -70,42 +71,41 @@ namespace Browser
 
 	scoped_refptr<BrowserDlg> BrowserDlgManager::CreateBrowserDlgAsPopup(
 		bool with_controls,
-		const CefString& target_url,
 		const CefPopupFeatures& popupFeatures,
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
-		CefBrowserSettings& settings) {
-			MainContext::Get()->PopulateBrowserSettings(&settings);
-			scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
-			if(pDlg){
-				pDlg->InitAsPopup(this, with_controls, target_url, popupFeatures, windowInfo, client, settings);
+		CefBrowserSettings& settings)
+	{
+		MainContext::Get()->PopulateBrowserSettings(&settings);
+		scoped_refptr<BrowserDlg> pDlg = new Browser::BrowserDlg();
+		if(pDlg){
+			pDlg->InitAsPopup(this, with_controls, popupFeatures, windowInfo, client, settings);
 
-				// Store a reference to the root window on the main thread.
-				OnRootWindowCreated(pDlg);
-			}
+			// Store a reference to the root window on the main thread.
+			OnBrowserDlgCreated(pDlg);
+		}
 
-			return pDlg;
+		return pDlg;
 	}
 
-	scoped_refptr<BrowserDlg> BrowserDlgManager::GetWindowForBrowser(
-		int browser_id) {
-			REQUIRE_MAIN_THREAD();
+	scoped_refptr<BrowserDlg> BrowserDlgManager::GetWindowForBrowser(int browser_id)
+	{
+		REQUIRE_MAIN_THREAD();
 
-			BrowserDlgSet::const_iterator it = m_BrowserDlgSet.begin();
-			for (; it != m_BrowserDlgSet.end(); ++it) {
-				CefRefPtr<CefBrowser> browser = (*it)->GetBrowser();
-				if (browser.get() && browser->GetIdentifier() == browser_id)
-					return *it;
-			}
-			return NULL;
+		BrowserDlgSet::const_iterator it = m_BrowserDlgSet.begin();
+		for (; it != m_BrowserDlgSet.end(); ++it) {
+			CefRefPtr<CefBrowser> browser = (*it)->GetBrowser();
+			if (browser.get() && browser->GetIdentifier() == browser_id)
+				return *it;
+		}
+		return NULL;
 	}
 
-	void BrowserDlgManager::CloseAllWindows(bool force) {
+	void BrowserDlgManager::CloseAllWindows(bool force)
+	{
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(
-				base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this),
-				force));
+			MAIN_POST_CLOSURE(base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this), force));
 			return;
 		}
 
@@ -117,17 +117,15 @@ namespace Browser
 			(*it)->Close(force);
 	}
 
-	void BrowserDlgManager::OnRootWindowCreated(
-		scoped_refptr<BrowserDlg> pDlg) {
-			if (!CURRENTLY_ON_MAIN_THREAD()) {
-				// Execute this method on the main thread.
-				MAIN_POST_CLOSURE(
-					base::Bind(&BrowserDlgManager::OnRootWindowCreated,
-					base::Unretained(this), pDlg));
-				return;
-			}
+	void BrowserDlgManager::OnBrowserDlgCreated(scoped_refptr<BrowserDlg> pDlg)
+	{
+		if (!CURRENTLY_ON_MAIN_THREAD()) {
+			// Execute this method on the main thread.
+			MAIN_POST_CLOSURE(base::Bind(&BrowserDlgManager::OnBrowserDlgCreated, base::Unretained(this), pDlg));
+			return;
+		}
 
-			m_BrowserDlgSet.insert(pDlg);
+		m_BrowserDlgSet.insert(pDlg);
 	}
 
 	CefRefPtr<CefRequestContext> BrowserDlgManager::GetRequestContext()
@@ -166,17 +164,11 @@ namespace Browser
 		return m_SharedRequestContext;
 	}
 
-	void BrowserDlgManager::OnExit(BrowserDlg* pDlg) {
-		REQUIRE_MAIN_THREAD();
-
-		CloseAllWindows(false);
-	}
-
-	void BrowserDlgManager::OnRootWindowDestroyed(BrowserDlg* pDlg) {
+	void BrowserDlgManager::OnBrowserDlgDestroyed(BrowserDlg* pDlg)
+	{
 		REQUIRE_MAIN_THREAD();
 
 		BrowserDlgSet::iterator it = m_BrowserDlgSet.find(pDlg);
-		DCHECK(it != m_BrowserDlgSet.end());
 		if (it != m_BrowserDlgSet.end())
 			m_BrowserDlgSet.erase(it);
 

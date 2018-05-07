@@ -23,7 +23,6 @@ namespace Browser
 
 		scoped_refptr<BrowserDlg> CreateBrowserDlgAsPopup(
 			bool with_controls,
-			const CefString& target_url,
 			const CefPopupFeatures& popupFeatures,
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
@@ -43,12 +42,11 @@ namespace Browser
 
 		~BrowserDlgManager();
 
-		void OnRootWindowCreated(scoped_refptr<BrowserDlg> pDlg);
+		void OnBrowserDlgCreated(scoped_refptr<BrowserDlg> pDlg);
 
 		// BrowserDlg::Delegate methods.
 		CefRefPtr<CefRequestContext> GetRequestContext() OVERRIDE;
-		void OnExit(BrowserDlg* pDlg) OVERRIDE;
-		void OnRootWindowDestroyed(BrowserDlg* pDlg) OVERRIDE;
+		void OnBrowserDlgDestroyed(BrowserDlg* pDlg) OVERRIDE;
 
 		const bool m_bTerminateWhenAllWindowsClosed;
 		bool m_bRequestContextPerBrowser;

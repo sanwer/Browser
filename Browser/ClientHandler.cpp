@@ -120,6 +120,7 @@ namespace Browser
 
 	ClientHandler::ClientHandler(Delegate* delegate, const std::string& startup_url)
 		: m_Delegate(delegate),
+		m_nDefaultBrowserId(-1),
 		m_sStartupUrl(startup_url),
 		m_sConsoleLogFile(MainContext::Get()->GetConsoleLogPath()),
 		m_bFirstConsoleMessage(true),
@@ -193,20 +194,10 @@ namespace Browser
 			browser->Reload();
 			return true;
 		case CLIENT_ID_SHOW_DEVTOOLS:
-			{
-				CefWindowInfo windowInfo;
-				CefBrowserSettings settings;
-				HWND hWnd = browser->GetHost()->GetWindowHandle();
-				RECT rcWnd={0};
-				::GetWindowRect(hWnd, &rcWnd);
-				windowInfo.SetAsPopup(hWnd,L"开发工具");
-				CefPoint point;
-				point.Set(rcWnd.left,rcWnd.top);
-				browser->GetHost()->ShowDevTools(windowInfo,this,settings,point);
-				return true;
-			}
+			ShowDevTools(browser, CefPoint());
+			return true;
 		case CLIENT_ID_CLOSE_DEVTOOLS:
-			browser->GetHost()->CloseDevTools();
+			CloseDevTools(browser);
 			return true;
 		case CLIENT_ID_LOGO:
 			frame->LoadURL("http://tests/logo.png");
@@ -222,9 +213,7 @@ namespace Browser
 	void ClientHandler::OnAddressChange(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, const CefString& url)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		if (frame->IsMain() && !url.empty()){
-			if(_wcsnicmp(url.c_str(),L"chrome-devtools:",16)==0)
-				return;
+		if (frame->IsMain()){
 			NotifyAddress(browser, url);
 		}
 	}
@@ -373,15 +362,21 @@ namespace Browser
 		bool* no_javascript_access)
 	{
 		CEF_REQUIRE_IO_THREAD();
+		int nBrowserId = browser->GetIdentifier();
 
 		// Return true to cancel the popup window.
-		bool bRet = CreatePopupWindow(browser, frame, target_url, target_frame_name, target_disposition, user_gesture, popupFeatures, windowInfo, client,settings,no_javascript_access);
-		return !bRet;
+		if(target_disposition == WOD_NEW_POPUP){
+			return !CreatePopupWindow(browser, false, popupFeatures, windowInfo, client,settings);
+		}else{
+			NotifyNewTab(browser,target_url);
+		}
+		return true;
 	}
 
 	void ClientHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 	{
 		CEF_REQUIRE_UI_THREAD();
+		int nBrowserId = browser->GetIdentifier();
 
 		if (!m_MessageRouter) {
 			// Create the browser-side router for query handling.
@@ -395,6 +390,9 @@ namespace Browser
 				m_MessageRouter->AddHandler(*(it), false);
 		}
 
+		if(m_nDefaultBrowserId == -1){
+			m_nDefaultBrowserId = browser->GetIdentifier();
+		}
 		m_BrowserList.push_back(browser);
 
 		// Disable mouse cursor change if requested via the command-line flag.
@@ -441,6 +439,7 @@ namespace Browser
 		NotifyBrowserClosed(browser);
 
 		if (m_BrowserList.empty()) {
+			m_nDefaultBrowserId = -1;
 			// Remove and delete message router handlers.
 			MessageHandlerSet::const_iterator it = m_MessageHandlerSet.begin();
 			for (; it != m_MessageHandlerSet.end(); ++it) {
@@ -652,29 +651,55 @@ namespace Browser
 		m_MessageRouter->OnRenderProcessTerminated(browser);
 	}
 
+	CefRefPtr<CefBrowser> ClientHandler::GetBrowser(int nBrowserId)
+	{
+		int nFindId = nBrowserId;
+		if(nFindId <= 0){
+			nFindId = m_nDefaultBrowserId;
+		}
+		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_BrowserList.begin();
+		for (; item != m_BrowserList.end(); item++)
+		{
+			if ((*item)->GetIdentifier() == nFindId){
+				return (*item);
+			}
+		}
+		return NULL;
+	}
+
+	void ClientHandler::ShowDevTools(CefRefPtr<CefBrowser> browser, const CefPoint& inspect_element_at)
+	{
+		CefWindowInfo windowInfo;
+		CefRefPtr<CefClient> client;
+		CefBrowserSettings settings;
+		int nBrowserId = browser->GetIdentifier();
+
+		if (CreatePopupWindow(browser, true, CefPopupFeatures(), windowInfo, client, settings)) {
+			browser->GetHost()->ShowDevTools(windowInfo, client, settings, inspect_element_at);
+		}
+	}
+
+	void ClientHandler::CloseDevTools(CefRefPtr<CefBrowser> browser)
+	{
+		browser->GetHost()->CloseDevTools();
+	}
+
 	bool ClientHandler::CreatePopupWindow(
 		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		const CefString& target_url,
-		const CefString& target_frame_name,
-		cef_window_open_disposition_t target_disposition,
-		bool user_gesture,
+		bool is_devtools,
 		const CefPopupFeatures& popupFeatures,
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
-		CefBrowserSettings& settings,
-		bool* no_javascript_access)
+		CefBrowserSettings& settings)
 	{
-		// Redirect all popup page into the source frame forcefully
-		//frame->LoadURL(target_url);
+		int nBrowserId = browser->GetIdentifier();
+		// Note: This method will be called on multiple threads.
 
-		if(target_disposition == WOD_NEW_POPUP){
-			MainContext::Get()->GetBrowserDlgManager()->CreateBrowserDlgAsPopup(false, target_url, popupFeatures, windowInfo, client, settings);
-			return true;
-		}else{
-			NotifyNewTab(browser,target_url);
-		}
-		return false;
+		// The popup browser will be parented to a new native window.
+		// Don't show URL bar and navigation buttons on DevTools windows.
+		MainContext::Get()->GetBrowserDlgManager()->CreateBrowserDlgAsPopup(!is_devtools, popupFeatures, windowInfo, client, settings);
+
+		return true;
 	}
 
 	void ClientHandler::NotifyBrowserCreated(CefRefPtr<CefBrowser> browser)
@@ -781,8 +806,6 @@ namespace Browser
 	void ClientHandler::NotifyNewTab(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
 		if(url.empty())
-			return;
-		if(_wcsnicmp(url.c_str(),L"chrome-devtools:",16)==0)
 			return;
 		if (!CURRENTLY_ON_MAIN_THREAD()) {
 			// Execute this method on the main thread.

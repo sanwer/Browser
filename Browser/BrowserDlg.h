@@ -14,17 +14,12 @@ namespace Browser
 		class Delegate {
 		public:
 			virtual CefRefPtr<CefRequestContext> GetRequestContext() = 0;
-			virtual void OnExit(BrowserDlg* pDlg) = 0;
-			virtual void OnRootWindowDestroyed(BrowserDlg* pDlg) = 0;
+			virtual void OnBrowserDlgDestroyed(BrowserDlg* pDlg) = 0;
 		protected:
 			virtual ~Delegate() {}
 		};
 		BrowserDlg();
 		~BrowserDlg();
-
-		// Returns the BrowserDlg associated with the specified |browser_id|. Must be
-		// called on the main thread.
-		static scoped_refptr<BrowserDlg> GetForBrowser(int browser_id);
 
 	public:
 		LPCTSTR GetWindowClassName() const;
@@ -53,6 +48,7 @@ namespace Browser
 
 	private:
 		DuiLib::CHorizontalLayoutUI* uiTabs;
+		DuiLib::CLabelUI* pTitle;
 		DuiLib::CButtonUI* tabNew;
 		DuiLib::CControlUI* uiToolbar;
 		DuiLib::CButtonUI* btnBackward;
@@ -74,7 +70,6 @@ namespace Browser
 		void InitAsPopup(
 			BrowserDlg::Delegate* delegate,
 			bool with_controls,
-			const CefString& target_url,
 			const CefPopupFeatures& popupFeatures,
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
@@ -98,8 +93,8 @@ namespace Browser
 		bool m_bWindowDestroyed;
 		bool m_bBrowserDestroyed;
 		int m_nCurBrowserId;
-		Browser::BrowserUI* m_pBrowserUI;
 		BrowserDlg::Delegate* m_Delegate;
+		Browser::BrowserUI* m_pBrowserUI;
 		scoped_ptr<Browser::BrowserWindow> m_BrowserCtrl;
 	};
 }

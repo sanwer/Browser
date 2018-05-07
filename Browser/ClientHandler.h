@@ -234,22 +234,27 @@ namespace Browser
 		// Returns the Delegate.
 		Delegate* delegate() const { return m_Delegate; }
 
+		// Returns the Browser.
+		CefRefPtr<CefBrowser> GetBrowser(int nBrowserId=-1);
+
+		// Show a new DevTools popup window.
+		void ShowDevTools(CefRefPtr<CefBrowser> browser,
+			const CefPoint& inspect_element_at);
+
+		// Close the existing DevTools popup window, if any.
+		void CloseDevTools(CefRefPtr<CefBrowser> browser);
+
 		// Returns the startup URL.
 		std::string StartupUrl() const { return m_sStartupUrl; }
 
 	private:
 		bool CreatePopupWindow(
 			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame,
-			const CefString& target_url,
-			const CefString& target_frame_name,
-			cef_window_open_disposition_t target_disposition,
-			bool user_gesture,
+			bool is_devtools,
 			const CefPopupFeatures& popupFeatures,
 			CefWindowInfo& windowInfo,
 			CefRefPtr<CefClient>& client,
-			CefBrowserSettings& settings,
-			bool* no_javascript_access);
+			CefBrowserSettings& settings);
 
 		// Execute Delegate notifications on the main thread.
 		void NotifyBrowserCreated(CefRefPtr<CefBrowser> browser);
@@ -266,6 +271,7 @@ namespace Browser
 	private:
 		Delegate* m_Delegate;
 		std::vector<CefRefPtr<CefBrowser>> m_BrowserList;
+		int m_nDefaultBrowserId;
 
 		// Handles the browser side of query routing. The renderer side is handled
 		// in client_renderer.cc.
