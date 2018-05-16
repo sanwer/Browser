@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ClientAppRenderer.h"
 #include "include/base/cef_logging.h"
+#include "PerfTest.h"
 
 namespace Browser
 {
@@ -123,5 +124,6 @@ namespace Browser
 	// static
 	void ClientAppRenderer::CreateDelegates(DelegateSet& delegates) {
 		Renderer::CreateDelegates(delegates);
+		PerfTest::CreateDelegates(delegates);
 	}
 }

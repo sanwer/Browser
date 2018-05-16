@@ -14,6 +14,9 @@ function sendMessage() {
     onFailure: function(error_code, error_message) {}
   });
 }
+function PerfTest() {
+  alert(window.GetPerfTests());
+}
 </script>
 
 </head>
@@ -23,6 +26,8 @@ Message: <input type="text" id="message" value="My Message">
 <br/><input type="button" onclick="sendMessage();" value="Send Message">
 <br/>You should see the reverse of your message below:
 <br/><textarea rows="10" cols="40" id="result"></textarea>
+<br/>
+<br/><input type="button" onclick="PerfTest();" value="PerfTest">
 </form>
 </body>
 </html>

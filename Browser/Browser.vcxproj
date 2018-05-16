@@ -139,9 +139,9 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-    <PreBuildEvent>
-      <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
-    </PreBuildEvent>
+      <PreBuildEvent>
+        <Command>IF NOT EXIST Skin.zip ..\Bin\7z.exe a Skin.zip .\Skin\*</Command>
+      </PreBuildEvent>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -168,6 +168,7 @@
     <ClCompile Include="MainContext.cpp" />
     <ClCompile Include="MainDlg.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
+    <ClCompile Include="PerfTest.cpp" />
     <ClCompile Include="ResourceUtil.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -192,6 +193,7 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="MainContext.h" />
     <ClInclude Include="MessageLoop.h" />
+    <ClInclude Include="PerfTest.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceUtil.h" />
     <ClInclude Include="stdafx.h" />

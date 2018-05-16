@@ -66,6 +66,9 @@
     <ClCompile Include="BrowserWindow.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PerfTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -120,6 +123,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="BrowserWindow.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PerfTest.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
