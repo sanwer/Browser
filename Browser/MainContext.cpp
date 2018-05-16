@@ -10,8 +10,7 @@ namespace Browser
 {
 	namespace {
 		// The default URL to load in a browser window.
-		//const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
-		const WCHAR kDefaultUrl[] = L"http://www.w3school.com.cn/jsref/met_win_open.asp";
+		const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
 
 		MainContext* g_main_context = NULL;
 	}
