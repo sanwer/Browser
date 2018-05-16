@@ -4,14 +4,8 @@ SET PLATFORM=x86
 SET DEVPATH64=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;
 SET DEVPATH86=C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE;
 SET PATH=%PATH%;%DEVPATH86%;%DEVPATH64%
-SET Action="Prep"
-CHOICE /C PBMCE /N /D P /T 3 /M "Build with CEF(B) Build with miniblink(M) Clean(C) Continue:"
-IF %ERRORLEVEL% LEQ 1 (SET Action="Prep" && GOTO Prep)
-IF %ERRORLEVEL% LEQ 2 (SET Action="BuildC" && GOTO Prep)
-IF %ERRORLEVEL% LEQ 3 (SET Action="BuildM" && GOTO Prep)
-IF %ERRORLEVEL% LEQ 4 (SET Action="Clean" && GOTO Clean)
-IF %ERRORLEVEL% LEQ 5 (SET Action="END" && GOTO END)
 
+Rem GOTO Clean
 
 :Prep
 Echo Packed Skin.zip
@@ -21,11 +15,7 @@ pushd "%CD%\Browser\Skin\"
 popd popd
 Echo.
 
-
-IF %Action%=="Prep" GOTO END
-IF %Action%=="BuildC" GOTO BuildC
-IF %Action%=="BuildM" GOTO BuildM
-
+Rem GOTO BuildM
 
 :BuildC
 IF NOT EXIST "%CD%\Bin\libcef.dll" (
@@ -45,13 +35,12 @@ Echo Build Release Version with CEF
 (Echo #define USE_CEF)>"%CD%\Browser\config.h"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 DEVENV Browser.sln /build "Release|Win32"
-myproj.csproj
 IF "%ERRORLEVEL%"=="1" GOTO Error
 Echo Package
 pushd "%CD%\Bin\"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 IF EXIST Browser_CEF.zip DEL /F /Q /S Browser_CEF.zip
-7z.exe a Browser_CEF.zip Browser.exe ReadMe.txt locales plugins\pepflashplayer.dll cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin
+7z.exe a Browser_CEF.zip Browser.exe ReadMe.txt locales cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin
 popd popd
 GOTO End
 
