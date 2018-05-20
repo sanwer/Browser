@@ -529,8 +529,8 @@ namespace Browser
 			height = rcWindow.bottom - rcWindow.top;
 		}
 
-		// Create the main window initially hidden.
-		Create(m_hParent,_T("Browser"),UI_WNDSTYLE_FRAME,WS_EX_APPWINDOW,x, y, width, height,NULL);
+		// Create the main window.
+		Create(m_hParent,_T("Browser"),UI_WNDSTYLE_FRAME|WS_CLIPSIBLINGS|WS_CLIPCHILDREN,WS_EX_APPWINDOW,x, y, width, height,NULL);
 
 		::SetMenu(m_hWnd, NULL);
 
