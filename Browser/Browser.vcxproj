@@ -167,7 +167,6 @@
     <ClCompile Include="ClientSwitches.cpp" />
     <ClCompile Include="MainContext.cpp" />
     <ClCompile Include="MainDlg.cpp" />
-    <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="PerfTest.cpp" />
     <ClCompile Include="ResourceUtil.cpp" />
     <ClCompile Include="stdafx.cpp">

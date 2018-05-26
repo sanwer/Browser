@@ -13,7 +13,7 @@
 
 namespace Browser
 {
-	int RunMain(HINSTANCE hInstance, int nCmdShow)
+	int RunMain(HINSTANCE hInstance, int nCmdShow, const CefString& url)
 	{
 		int result = 0;
 		HRESULT Hr = ::CoInitialize(NULL);
@@ -74,6 +74,7 @@ namespace Browser
 		settings.log_severity = LOGSEVERITY_DISABLE;
 #endif
 		//settings.multi_threaded_message_loop = true;
+		//settings.single_process = true;
 		
 
 		// Initialize CEF.
@@ -82,29 +83,24 @@ namespace Browser
 		// Register scheme handlers.
 		//ClientRunner::RegisterSchemeHandlers();
 
-		scoped_ptr<MessageLoop> message_loop;
-		message_loop.reset(new MessageLoop);
-
 		// Create the first window.
 		BrowserDlg* pDlg = context->GetBrowserDlgManager()->CreateBrowserDlg(
 			NULL,
-			true,             // Show controls.
-			CefRect(),        // Use default system size.
-			std::wstring());   // Use default URL.
+			true,		// Show controls.
+			CefRect(),	// Use default system size.
+			url);		// Use default URL.
 
 		if(pDlg) {
 			pDlg->CenterWindow();
 		}
 
 		//DuiLib::CPaintManagerUI::MessageLoop();
-		result = message_loop->Run();
+		CefRunMessageLoop();
 
 		DuiLib::CPaintManagerUI::Term();
 
 		// Shut down CEF.
 		context->Shutdown();
-
-		message_loop.reset();
 
 		::CoUninitialize();
 		return result;
@@ -116,5 +112,5 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LPTSTR    lpCmdLine,
 	int       nCmdShow)
 {
-	return Browser::RunMain(hInstance, nCmdShow);
+	return Browser::RunMain(hInstance, nCmdShow, "www.baidu.com");
 }

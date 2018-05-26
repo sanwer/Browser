@@ -44,7 +44,7 @@ namespace Browser
 		typedef std::set<CefMessageRouterBrowserSide::Handler*> MessageHandlerSet;
 
 	public:
-		ClientHandler(Delegate* delegate, const std::string& startup_url);
+		ClientHandler(Delegate* delegate, const CefString& startup_url);
 		void DetachDelegate();
 
 		//////////////////////////////////////////////////////////////////////////

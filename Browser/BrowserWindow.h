@@ -29,13 +29,13 @@ namespace Browser
 
 		// Constructor may be called on any thread.
 		// |delegate| must outlive this object.
-		explicit BrowserWindow(Delegate* delegate, const std::string& startup_url);
+		explicit BrowserWindow(Delegate* delegate, const CefString& startup_url);
 
 
 		// Create a new browser and native window.
 		virtual void CreateBrowser(
 			CefWindowHandle parent_handle,
-			const std::wstring& url,
+			const CefString& url,
 			const CefRect& rect,
 			const CefBrowserSettings& settings,
 			CefRefPtr<CefRequestContext> request_context);

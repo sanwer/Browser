@@ -19,7 +19,7 @@ namespace Browser
 			HWND hParent,
 			bool with_controls,
 			const CefRect& bounds,
-			const std::wstring& url);
+			const CefString& url);
 
 		scoped_refptr<BrowserDlg> CreateBrowserDlgAsPopup(
 			bool with_controls,

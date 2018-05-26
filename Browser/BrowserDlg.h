@@ -75,14 +75,14 @@ namespace Browser
 			CefRefPtr<CefClient>& client,
 			CefBrowserSettings& settings);
 
-		void NewTab(const std::wstring& url);
+		void NewTab(const CefString& url);
 
 		CefRefPtr<CefBrowser> GetBrowser();
 		CefWindowHandle GetWindowHandle();
 		void LoadURL(const CefString& url);
 
 	private:
-		void CreateBrowserWindow(const std::string& startup_url);
+		void CreateBrowserWindow(const CefString& startup_url);
 		void CreateBrowserDlg(const CefBrowserSettings& settings);
 
 		HWND m_hParent;

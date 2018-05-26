@@ -42,7 +42,7 @@ namespace Browser
 		m_pCtrl = pCtrl;
 	}
 
-	void BrowserUI::CreateBrowser(const std::wstring& url, CefRefPtr<CefRequestContext> request_context)
+	void BrowserUI::CreateBrowser(const CefString& url, CefRefPtr<CefRequestContext> request_context)
 	{
 		if(m_pCtrl){
 			CefBrowserSettings settings;

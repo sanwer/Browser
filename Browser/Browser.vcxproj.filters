@@ -27,9 +27,6 @@
     <ClCompile Include="ClientHandler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MessageLoop.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BrowserDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

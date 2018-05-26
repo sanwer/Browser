@@ -54,7 +54,7 @@ namespace Browser
 		HWND hParent,
 		bool with_controls,
 		const CefRect& bounds,
-		const std::wstring& url)
+		const CefString& url)
 	{
 		CefBrowserSettings settings;
 		MainContext::Get()->PopulateBrowserSettings(&settings);
@@ -90,7 +90,7 @@ namespace Browser
 
 	scoped_refptr<BrowserDlg> BrowserDlgManager::GetWindowForBrowser(int browser_id)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		BrowserDlgSet::const_iterator it = m_BrowserDlgSet.begin();
 		for (; it != m_BrowserDlgSet.end(); ++it) {
@@ -103,9 +103,9 @@ namespace Browser
 
 	void BrowserDlgManager::CloseAllWindows(bool force)
 	{
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this), force));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this), force)));
 			return;
 		}
 
@@ -119,9 +119,9 @@ namespace Browser
 
 	void BrowserDlgManager::OnBrowserDlgCreated(scoped_refptr<BrowserDlg> pDlg)
 	{
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&BrowserDlgManager::OnBrowserDlgCreated, base::Unretained(this), pDlg));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlgManager::OnBrowserDlgCreated, base::Unretained(this), pDlg)));
 			return;
 		}
 
@@ -130,7 +130,7 @@ namespace Browser
 
 	CefRefPtr<CefRequestContext> BrowserDlgManager::GetRequestContext()
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		if (m_bRequestContextPerBrowser) {
 			// Create a new request context for each browser.
@@ -166,7 +166,7 @@ namespace Browser
 
 	void BrowserDlgManager::OnBrowserDlgDestroyed(BrowserDlg* pDlg)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		BrowserDlgSet::iterator it = m_BrowserDlgSet.find(pDlg);
 		if (it != m_BrowserDlgSet.end())
@@ -174,7 +174,7 @@ namespace Browser
 
 		if (m_bTerminateWhenAllWindowsClosed && m_BrowserDlgSet.empty()) {
 			// Quit the main message loop after all windows have closed.
-			MessageLoop::Get()->Quit();
+			CefQuitMessageLoop();
 			//PostQuitMessage(0);
 		}
 	}

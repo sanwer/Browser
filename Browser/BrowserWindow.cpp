@@ -5,7 +5,7 @@
 
 namespace Browser
 {
-	BrowserWindow::BrowserWindow(Delegate* delegate, const std::string& startup_url)
+	BrowserWindow::BrowserWindow(Delegate* delegate, const CefString& startup_url)
 		: m_Delegate(delegate)
 	{
 		DCHECK(m_Delegate);
@@ -14,19 +14,19 @@ namespace Browser
 
 	void BrowserWindow::CreateBrowser(
 		CefWindowHandle parent_handle,
-		const std::wstring& url,
+		const CefString& url,
 		const CefRect& rect,
 		const CefBrowserSettings& settings,
 		CefRefPtr<CefRequestContext> request_context)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		CefWindowInfo window_info;
 		RECT wnd_rect = {rect.x, rect.y, rect.x + rect.width, rect.y + rect.height};
 		window_info.SetAsChild(parent_handle, wnd_rect);
 
 		CefBrowserHost::CreateBrowser(window_info, m_ClientHandler,
-			url.empty() ? MainContext::Get()->GetMainURL() : url, settings, request_context);
+			url.empty() ? m_ClientHandler->StartupUrl() : url, settings, request_context);
 	}
 
 	void BrowserWindow::GetPopupConfig(CefWindowHandle temp_handle,
@@ -42,7 +42,7 @@ namespace Browser
 
 	void BrowserWindow::ShowPopup(int nBrowserId, CefWindowHandle hParentWnd, int x, int y, size_t width, size_t height)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		if (pBrowser){
@@ -58,7 +58,7 @@ namespace Browser
 
 	void BrowserWindow::ShowBrowser(int nBrowserId, int x, int y, size_t width, size_t height)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		std::vector<CefRefPtr<CefBrowser>>::iterator item = m_ClientHandler->m_BrowserList.begin();
@@ -83,7 +83,7 @@ namespace Browser
 
 	CefWindowHandle BrowserWindow::GetWindowHandle(int nBrowserId) const
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		CefRefPtr<CefBrowser> pBrowser = m_ClientHandler->GetBrowser(nBrowserId);
 		if (pBrowser)
@@ -93,30 +93,30 @@ namespace Browser
 
 	CefRefPtr<CefBrowser> BrowserWindow::GetBrowser(int nBrowserId) const
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		return m_ClientHandler->GetBrowser(nBrowserId);;
 	}
 
 	void BrowserWindow::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		m_Delegate->OnBrowserCreated(browser);
 	}
 
 	void BrowserWindow::OnBrowserClosing(CefRefPtr<CefBrowser> browser)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
 	void BrowserWindow::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
 	void BrowserWindow::OnBrowserAllClosed()
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		m_ClientHandler->DetachDelegate();
 		m_ClientHandler = NULL;
@@ -127,31 +127,31 @@ namespace Browser
 
 	void BrowserWindow::OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		m_Delegate->OnSetAddress(browser, url);
 	}
 
 	void BrowserWindow::OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		m_Delegate->OnSetTitle(browser, title);
 	}
 
 	void BrowserWindow::OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		m_Delegate->OnSetFullscreen(browser, fullscreen);
 	}
 
 	void BrowserWindow::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		m_Delegate->OnSetLoadingState(browser, isLoading, canGoBack, canGoForward);
 	}
 
 	void BrowserWindow::OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		m_Delegate->OnSetDraggableRegions(browser, regions);
 	}
 

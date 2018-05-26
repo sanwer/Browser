@@ -38,7 +38,6 @@ namespace Browser
 
 	BrowserDlg::~BrowserDlg()
 	{
-		REQUIRE_MAIN_THREAD();
 		DCHECK(m_bWindowDestroyed);
 		DCHECK(m_bBrowserDestroyed);
 		//PostQuitMessage(0);
@@ -240,7 +239,7 @@ namespace Browser
 
 	void BrowserDlg::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		
 		int nBrowserId = browser->GetIdentifier();
 		if(m_nCurBrowserId != nBrowserId){
@@ -262,12 +261,12 @@ namespace Browser
 
 	void BrowserDlg::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
 	void BrowserDlg::OnBrowserAllClosed()
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		m_BrowserCtrl.reset();
 
@@ -284,7 +283,7 @@ namespace Browser
 
 	void BrowserDlg::OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		CDuiString sBuffer;
 		CDuiString sUrl;
 		bool bAddTab = true;
@@ -339,7 +338,7 @@ namespace Browser
 
 	void BrowserDlg::OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		CDuiString sTitle;
 		bool bAddTab = true;
 		int nTabsCount = uiTabs->GetCount();
@@ -374,12 +373,12 @@ namespace Browser
 
 	void BrowserDlg::OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
 	void BrowserDlg::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		if(btnBackward)
 			btnBackward->SetEnabled(canGoBack);
 		if(btnForward)
@@ -388,11 +387,11 @@ namespace Browser
 
 	void BrowserDlg::OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
 	void BrowserDlg::OnNewTab(CefRefPtr<CefBrowser> browser, const CefString& url) {
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 		NewTab(url);
 	}
 
@@ -426,10 +425,10 @@ namespace Browser
 		m_bInitialized = true;
 
 		// Create the native root window on the main thread.
-		if (CURRENTLY_ON_MAIN_THREAD()) {
+		if (CefCurrentlyOn(TID_UI)) {
 			CreateBrowserDlg(settings);
 		} else {
-			MAIN_POST_CLOSURE(base::Bind(&BrowserDlg::CreateBrowserDlg, this, settings));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlg::CreateBrowserDlg, this, settings)));
 		}
 	}
 
@@ -463,7 +462,7 @@ namespace Browser
 		m_BrowserCtrl->GetPopupConfig(TempWindow::GetWindowHandle(),windowInfo, client, settings);
 	}
 
-	void BrowserDlg::NewTab(const std::wstring& url)
+	void BrowserDlg::NewTab(const CefString& url)
 	{
 		if(m_BrowserCtrl && m_pBrowserUI && url.length() > 0){
 			RECT rcPos = m_pBrowserUI->GetPos();
@@ -476,7 +475,7 @@ namespace Browser
 
 	CefRefPtr<CefBrowser> BrowserDlg::GetBrowser()
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		if (m_BrowserCtrl)
 			return m_BrowserCtrl->GetBrowser(m_nCurBrowserId);
@@ -501,14 +500,14 @@ namespace Browser
 		}
 	}
 
-	void BrowserDlg::CreateBrowserWindow(const std::string& startup_url)
+	void BrowserDlg::CreateBrowserWindow(const CefString& startup_url)
 	{
 		m_BrowserCtrl.reset(new BrowserWindow(this, startup_url));
 	}
 
 	void BrowserDlg::CreateBrowserDlg(const CefBrowserSettings& settings)
 	{
-		REQUIRE_MAIN_THREAD();
+		DCHECK(CefCurrentlyOn(TID_UI));
 
 		int x, y, width, height;
 		if (::IsRectEmpty(&m_rcStart)) {
@@ -541,14 +540,12 @@ namespace Browser
 				// With popups we already have a browser window. Parent the browser window
 				// to the root window and show it in the correct location.
 				m_BrowserCtrl->ShowPopup(m_nCurBrowserId, m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-				m_pBrowserUI->SetBkColor(0xFF4500FF);
 			}else{
 				// Create the browser window.
 				CefRect cef_rect(rect.left, rect.top,
 					rect.right - rect.left,
 					rect.bottom - rect.top);
 				m_BrowserCtrl->CreateBrowser(m_hWnd, std::wstring(), cef_rect, settings, m_Delegate->GetRequestContext());
-				m_pBrowserUI->SetBkColor(0xFFFFFFFF);
 			}
 		}
 	}

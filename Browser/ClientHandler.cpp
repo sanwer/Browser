@@ -118,7 +118,7 @@ namespace Browser
 		}
 	}
 
-	ClientHandler::ClientHandler(Delegate* delegate, const std::string& startup_url)
+	ClientHandler::ClientHandler(Delegate* delegate, const CefString& startup_url)
 		: m_Delegate(delegate),
 		m_nDefaultBrowserId(-1),
 		m_sStartupUrl(startup_url),
@@ -138,9 +138,9 @@ namespace Browser
 
 	void ClientHandler::DetachDelegate()
 	{
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::DetachDelegate, this));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::DetachDelegate, this)));
 			return;
 		}
 
@@ -697,16 +697,19 @@ namespace Browser
 
 		// The popup browser will be parented to a new native window.
 		// Don't show URL bar and navigation buttons on DevTools windows.
-		MainContext::Get()->GetBrowserDlgManager()->CreateBrowserDlgAsPopup(!is_devtools, popupFeatures, windowInfo, client, settings);
+		BrowserDlgManager* pManager = MainContext::Get()->GetBrowserDlgManager();
+		if(pManager){
+			pManager->CreateBrowserDlgAsPopup(!is_devtools, popupFeatures, windowInfo, client, settings);
+		}
 
 		return true;
 	}
 
 	void ClientHandler::NotifyBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyBrowserCreated, this, browser));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserCreated, this, browser)));
 			return;
 		}
 
@@ -716,9 +719,9 @@ namespace Browser
 
 	void ClientHandler::NotifyBrowserClosing(CefRefPtr<CefBrowser> browser)
 	{
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyBrowserClosing, this, browser));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserClosing, this, browser)));
 			return;
 		}
 
@@ -727,9 +730,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyBrowserClosed(CefRefPtr<CefBrowser> browser) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyBrowserClosed, this, browser));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserClosed, this, browser)));
 			return;
 		}
 
@@ -738,9 +741,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyBrowserAllClosed() {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyBrowserAllClosed, this));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserAllClosed, this)));
 			return;
 		}
 
@@ -749,9 +752,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyAddress(CefRefPtr<CefBrowser> browser, const CefString& url) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyAddress, this, browser, url));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyAddress, this, browser, url)));
 			return;
 		}
 
@@ -760,9 +763,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyTitle(CefRefPtr<CefBrowser> browser, const CefString& title) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyTitle, this, browser, title));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyTitle, this, browser, title)));
 			return;
 		}
 
@@ -771,9 +774,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyFullscreen, this, browser, fullscreen));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyFullscreen, this, browser, fullscreen)));
 			return;
 		}
 
@@ -782,9 +785,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyLoadingState, this, browser, isLoading, canGoBack, canGoForward));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyLoadingState, this, browser, isLoading, canGoBack, canGoForward)));
 			return;
 		}
 
@@ -793,9 +796,9 @@ namespace Browser
 	}
 
 	void ClientHandler::NotifyDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) {
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions)));
 			return;
 		}
 
@@ -807,9 +810,9 @@ namespace Browser
 	{
 		if(url.empty())
 			return;
-		if (!CURRENTLY_ON_MAIN_THREAD()) {
+		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			MAIN_POST_CLOSURE(base::Bind(&ClientHandler::NotifyNewTab, this, browser, url));
+			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyNewTab, this, browser, url)));
 			return;
 		}
 

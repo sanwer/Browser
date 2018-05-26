@@ -20,7 +20,7 @@ namespace Browser
 		LPVOID GetInterface(LPCTSTR pstrName);
 		void SetPos(RECT rc, bool bNeedInvalidate = true);
 		void SetCtrl(BrowserWindow* pCtrl);
-		void CreateBrowser(const std::wstring& url, CefRefPtr<CefRequestContext> request_context);
+		void CreateBrowser(const CefString& url, CefRefPtr<CefRequestContext> request_context);
 		void ShowBrowser(int nBrowserId=0);
 		void CloseBrowser(int nBrowserId=0);
 
