@@ -74,7 +74,7 @@ namespace Browser
 					}
 				}else{
 					if (hWnd){
-						SetWindowPos(hWnd, NULL,0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+						::ShowWindow(hWnd, SW_HIDE);
 					}
 				}
 			}

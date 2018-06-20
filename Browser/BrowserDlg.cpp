@@ -230,7 +230,6 @@ namespace Browser
 				if (m_pBrowserUI){
 					m_nCurBrowserId = msg.pSender->GetTag();
 					m_pBrowserUI->ShowBrowser(m_nCurBrowserId);
-					m_pBrowserUI->Invalidate();
 				}
 			}
 		}
@@ -322,6 +321,7 @@ namespace Browser
 				pTitle->SetTag(nBrowserId);
 				pTitle->SetUserData(sUrl);
 				uiTabs->AddAt(pTitle, nTabsCount - 1);
+				m_nCurBrowserId = nBrowserId;
 				sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
 				pTitle->ApplyAttributeList(sBuffer);
 				CControlUI* pControl = new CControlUI;

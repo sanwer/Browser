@@ -12,7 +12,8 @@ namespace Browser
 	BrowserUI::BrowserUI(BrowserDlg* pParent, HWND hParentWnd)
 		: m_pParent(pParent),
 		m_hParentWnd(hParentWnd),
-		m_pCtrl(NULL)
+		m_pCtrl(NULL),
+		m_nCurBrowserId(0)
 	{
 		SetBkColor(0xFFFFFFFF);
 	}
@@ -32,7 +33,7 @@ namespace Browser
 	{
 		DuiLib::CDuiRect rcPos = rc;
 		if (m_pCtrl && !rcPos.IsNull()) {
-			m_pCtrl->ShowBrowser(0, rc.left, rc.top, rc.right - rc.left,rc.bottom - rc.top);
+			m_pCtrl->ShowBrowser(m_nCurBrowserId, rc.left, rc.top, rc.right - rc.left,rc.bottom - rc.top);
 		}
 		CControlUI::SetPos(rc, bNeedInvalidate);
 	}
@@ -54,6 +55,7 @@ namespace Browser
 
 	void BrowserUI::ShowBrowser(int nBrowserId)
 	{
+		m_nCurBrowserId = nBrowserId;
 		if(m_pCtrl){
 			RECT rcPos = GetPos();
 			m_pCtrl->ShowBrowser(nBrowserId, rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);

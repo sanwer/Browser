@@ -28,6 +28,7 @@ namespace Browser
 		HWND m_hParentWnd;
 		BrowserDlg* m_pParent;
 		BrowserWindow* m_pCtrl;
+		int m_nCurBrowserId;
 
 		DISALLOW_COPY_AND_ASSIGN(BrowserUI);
 	};
