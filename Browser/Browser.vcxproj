@@ -27,6 +27,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
     <UseDebugLibraries Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</UseDebugLibraries>
     <UseDebugLibraries Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</UseDebugLibraries>
     <UseDebugLibraries Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</UseDebugLibraries>
@@ -189,7 +190,6 @@
     <ClInclude Include="ClientRenderDelegate.h" />
     <ClInclude Include="ClientRunner.h" />
     <ClInclude Include="ClientSwitches.h" />
-    <ClInclude Include="config.h" />
     <ClInclude Include="MainContext.h" />
     <ClInclude Include="MessageLoop.h" />
     <ClInclude Include="PerfTest.h" />

@@ -237,7 +237,12 @@ namespace Browser
 		NotifyFullscreen(browser, fullscreen);
 	}
 
-	bool ClientHandler::OnConsoleMessage(CefRefPtr<CefBrowser> browser, const CefString& message, const CefString& source, int line)
+	bool ClientHandler::OnConsoleMessage(
+		CefRefPtr<CefBrowser> browser,
+		/*cef_log_severity_t level,*/
+		const CefString& message,
+		const CefString& source,
+		int line)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
@@ -320,17 +325,6 @@ namespace Browser
 		CEF_REQUIRE_UI_THREAD();
 
 		//NotifyDraggableRegions(regions);
-	}
-
-	bool ClientHandler::OnRequestGeolocationPermission(CefRefPtr<CefBrowser> browser,
-		const CefString& requesting_url,
-		int request_id,
-		CefRefPtr<CefGeolocationCallback> callback)
-	{
-		CEF_REQUIRE_UI_THREAD();
-		// 允许来自所有网站的地理位置访问.
-		callback->Continue(true);
-		return true;
 	}
 
 	bool ClientHandler::OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
@@ -459,7 +453,10 @@ namespace Browser
 		NotifyLoadingState(browser, isLoading, canGoBack, canGoForward);
 	}
 
-	void ClientHandler::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame/*,TransitionType transition_type*/)
+	void ClientHandler::OnLoadStart(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		TransitionType transition_type)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
@@ -510,6 +507,7 @@ namespace Browser
 	bool ClientHandler::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
+		/*bool user_gesture,*/
 		bool is_redirect)
 	{
 		CEF_REQUIRE_UI_THREAD();
@@ -596,46 +594,22 @@ namespace Browser
 		CefRefPtr<CefRequestCallback> callback) {
 			CEF_REQUIRE_UI_THREAD();
 
-			CefRefPtr<CefSSLCertPrincipal> subject = ssl_info->GetSubject();
-			CefRefPtr<CefSSLCertPrincipal> issuer = ssl_info->GetIssuer();
+			if (cert_error == ERR_CERT_AUTHORITY_INVALID &&
+				request_url.ToString().find("https://www.magpcss.org/") == 0U) {
+				// Allow the CEF Forum to load. It has a self-signed certificate.
+				callback->Continue(true);
+				return true;
+			}
+
+			CefRefPtr<CefX509Certificate> cert = ssl_info->GetX509Certificate();
+			CefRefPtr<CefX509CertPrincipal> subject = cert->GetSubject();
+			CefRefPtr<CefX509CertPrincipal> issuer = cert->GetIssuer();
 
 			// Build a table showing certificate information. Various types of invalid
 			// certificates can be tested using https://badssl.com/.
 			std::stringstream ss;
-			ss << "X.509 Certificate Information:"
-				"<table border=1><tr><th>Field</th><th>Value</th></tr>" <<
-				"<tr><td>Subject</td><td>" <<
-				(subject.get() ? subject->GetDisplayName().ToString() : "&nbsp;") <<
-				"</td></tr>"
-				"<tr><td>Issuer</td><td>" <<
-				(issuer.get() ? issuer->GetDisplayName().ToString() : "&nbsp;") <<
-				"</td></tr>"
-				"<tr><td>Serial #*</td><td>" <<
-				GetBinaryString(ssl_info->GetSerialNumber()) << "</td></tr>"
-				"<tr><td>Status</td><td>" <<
-				GetCertStatusString(ssl_info->GetCertStatus()) << "</td></tr>"
-				"<tr><td>Valid Start</td><td>" <<
-				GetTimeString(ssl_info->GetValidStart()) << "</td></tr>"
-				"<tr><td>Valid Expiry</td><td>" <<
-				GetTimeString(ssl_info->GetValidExpiry()) << "</td></tr>";
-
-			CefSSLInfo::IssuerChainBinaryList der_chain_list;
-			CefSSLInfo::IssuerChainBinaryList pem_chain_list;
-			ssl_info->GetDEREncodedIssuerChain(der_chain_list);
-			ssl_info->GetPEMEncodedIssuerChain(pem_chain_list);
-			DCHECK_EQ(der_chain_list.size(), pem_chain_list.size());
-
-			der_chain_list.insert(der_chain_list.begin(), ssl_info->GetDEREncoded());
-			pem_chain_list.insert(pem_chain_list.begin(), ssl_info->GetPEMEncoded());
-
-			for (size_t i = 0U; i < der_chain_list.size(); ++i) {
-				ss << "<tr><td>DER Encoded*</td>"
-					"<td style=\"max-width:800px;overflow:scroll;\">" <<
-					GetBinaryString(der_chain_list[i]) << "</td></tr>"
-					"<tr><td>PEM Encoded*</td>"
-					"<td style=\"max-width:800px;overflow:scroll;\">" <<
-					GetBinaryString(pem_chain_list[i]) << "</td></tr>";
-			}
+			ss << "<h3>X.509 Certificate Information:</h3>"
+				"<table border=1><tr><th>Field</th><th>Value</th></tr>";
 
 			ss << "</table> * Displayed value is base64 encoded.";
 

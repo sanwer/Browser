@@ -13,6 +13,27 @@ namespace Browser
 		const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
 
 		MainContext* g_main_context = NULL;
+
+		// Returns the ARGB value for |color|.
+		cef_color_t ParseColor(const std::string& color) {
+			std::string colorToLower;
+			colorToLower.resize(color.size());
+			std::transform(color.begin(), color.end(), colorToLower.begin(), ::tolower);
+
+			if (colorToLower == "black")
+				return CefColorSetARGB(255, 0, 0, 0);
+			else if (colorToLower == "blue")
+				return CefColorSetARGB(255, 0, 0, 255);
+			else if (colorToLower == "green")
+				return CefColorSetARGB(255, 0, 255, 0);
+			else if (colorToLower == "red")
+				return CefColorSetARGB(255, 255, 0, 0);
+			else if (colorToLower == "white")
+				return CefColorSetARGB(255, 255, 255, 255);
+
+			// Use the default color.
+			return 0;
+		}
 	}
 
 	// static
@@ -39,8 +60,7 @@ namespace Browser
 
 		if (m_CommandLine->HasSwitch(Switches::kBackgroundColor)) {
 			// Parse the background color value.
-			CefParseCSSColor(m_CommandLine->GetSwitchValue(Switches::kBackgroundColor),
-				false, m_BackgroundColor);
+			m_BackgroundColor = ParseColor(m_CommandLine->GetSwitchValue(Switches::kBackgroundColor));
 		}
 	}
 

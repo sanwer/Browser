@@ -9,7 +9,7 @@ namespace Browser
 	class ClientAppRenderer : public ClientApp , public CefRenderProcessHandler
 	{
 	public:
-		class Delegate : public virtual CefBase {
+		class Delegate : public virtual CefBaseRefCounted {
 		public:
 			virtual void OnRenderThreadCreated(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefListValue> extra_info) {}
@@ -25,15 +25,6 @@ namespace Browser
 			virtual CefRefPtr<CefLoadHandler> GetLoadHandler(
 				CefRefPtr<ClientAppRenderer> app) {
 					return NULL;
-			}
-
-			virtual bool OnBeforeNavigation(CefRefPtr<ClientAppRenderer> app,
-				CefRefPtr<CefBrowser> browser,
-				CefRefPtr<CefFrame> frame,
-				CefRefPtr<CefRequest> request,
-				cef_navigation_type_t navigation_type,
-				bool is_redirect) {
-					return false;
 			}
 
 			virtual void OnContextCreated(CefRefPtr<ClientAppRenderer> app,
@@ -83,12 +74,6 @@ namespace Browser
 		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) OVERRIDE;
 		CefRefPtr<CefLoadHandler> GetLoadHandler() OVERRIDE;
-		bool OnBeforeNavigation(
-			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame,
-			CefRefPtr<CefRequest> request,
-			NavigationType navigation_type,
-			bool is_redirect) OVERRIDE;
 		void OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
 		void OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) OVERRIDE;
 		void OnUncaughtException(

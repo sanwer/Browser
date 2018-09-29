@@ -27,7 +27,6 @@ namespace Browser
 			//单进程模式
 			//command_line->AppendSwitch("single-process");
 
-#ifndef USE_MINIBLINK
 			//command_line->AppendSwitch("--disable-web-security");//关闭同源策略
 
 			//使用系统Flash
@@ -36,7 +35,7 @@ namespace Browser
 			//指定Flash
 			//command_line->AppendSwitchWithValue("ppapi-flash-version", "20.0.0.228");
 			//command_line->AppendSwitchWithValue("ppapi-flash-path", "plugins\\pepflashplayer.dll");
-#endif
+
 			//同一个域下的使用同一个渲染进程
 			command_line->AppendSwitch("process-per-site");
 			command_line->AppendSwitch("enable-caret-browsing");
@@ -76,7 +75,7 @@ namespace Browser
 			(*it)->OnBeforeCommandLineProcessing(this, command_line);
 	}
 
-	void ClientAppBrowser::OnRegisterCustomSchemes(CefRefPtr<CefSchemeRegistrar> registrar)
+	void ClientAppBrowser::OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
 	{
 		// Default schemes that support cookies.
 		cookie_schemes.push_back("http");

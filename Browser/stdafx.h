@@ -19,17 +19,13 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include "resource.h"
-#include "config.h"
 
-#ifdef USE_MINIBLINK
-# pragma comment(lib, "node.lib")
+
+#ifdef _DEBUG
+//# define CEF_USE_SANDBOX
+# pragma comment(lib, "libcef_d.lib")
 #else
-# ifdef _DEBUG
-//#  define CEF_USE_SANDBOX
-#  pragma comment(lib, "libcef_d.lib")
-# else
-#  pragma comment(lib, "libcef.lib")
-# endif
+# pragma comment(lib, "libcef.lib")
 #endif
 
 #endif

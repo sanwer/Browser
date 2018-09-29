@@ -16,7 +16,6 @@ namespace Browser
 		, public CefDisplayHandler		// 浏览器显示处理
 		, public CefDownloadHandler		// 浏览器下载处理
 		, public CefDragHandler
-		, public CefGeolocationHandler	// 浏览器地理定位处理
 		, public CefJSDialogHandler		// 浏览器JS对话框处理
 		, public CefKeyboardHandler		// 浏览器键盘处理
 		, public CefLifeSpanHandler		// 浏览器生命周期处理
@@ -53,7 +52,6 @@ namespace Browser
 		CefRefPtr<CefDisplayHandler>		GetDisplayHandler()		OVERRIDE {return this;}
 		CefRefPtr<CefDownloadHandler>		GetDownloadHandler()	OVERRIDE {return this;}
 		CefRefPtr<CefDragHandler>			GetDragHandler()		OVERRIDE {return this;}
-		CefRefPtr<CefGeolocationHandler>	GetGeolocationHandler()	OVERRIDE {return this;}
 		CefRefPtr<CefJSDialogHandler>		GetJSDialogHandler()	OVERRIDE {return this;}
 		CefRefPtr<CefKeyboardHandler>		GetKeyboardHandler()	OVERRIDE {return this;}
 		CefRefPtr<CefLifeSpanHandler>		GetLifeSpanHandler()	OVERRIDE {return this;}
@@ -97,6 +95,7 @@ namespace Browser
 			bool fullscreen) OVERRIDE;
 		bool OnConsoleMessage(
 			CefRefPtr<CefBrowser> browser,
+			/*cef_log_severity_t level,*/
 			const CefString& message,
 			const CefString& source,
 			int line) OVERRIDE;
@@ -128,14 +127,6 @@ namespace Browser
 		void OnDraggableRegionsChanged(
 			CefRefPtr<CefBrowser> browser,
 			const std::vector<CefDraggableRegion>& regions) OVERRIDE;
-
-		//////////////////////////////////////////////////////////////////////////
-		// CefGeolocationHandler methods
-		bool OnRequestGeolocationPermission(
-			CefRefPtr<CefBrowser> browser,
-			const CefString& requesting_url,
-			int request_id,
-			CefRefPtr<CefGeolocationCallback> callback) OVERRIDE;
 
 		//////////////////////////////////////////////////////////////////////////
 		// CefKeyboardHandler methods
@@ -173,7 +164,8 @@ namespace Browser
 			bool canGoForward) OVERRIDE;
 		void OnLoadStart(
 			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame) OVERRIDE;
+			CefRefPtr<CefFrame> frame,
+			TransitionType transition_type) OVERRIDE;
 		void OnLoadEnd(
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
@@ -191,6 +183,7 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			CefRefPtr<CefRequest> request,
+			/*bool user_gesture,*/
 			bool is_redirect) OVERRIDE;
 		bool OnOpenURLFromTab(
 			CefRefPtr<CefBrowser> browser,

@@ -5,57 +5,48 @@ SET DEVPATH64=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE;
 SET DEVPATH86=C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE;
 SET PATH=%PATH%;%DEVPATH86%;%DEVPATH64%
 
-Rem GOTO Clean
+SET Action=Clean
+CHOICE /C BCE /N /D B /T 3 /M "Build(B) Clean(C) Continue:"
+IF %ERRORLEVEL% LEQ 1 (SET Action=Build && GOTO Start)
+IF %ERRORLEVEL% LEQ 2 (SET Action=Clean && GOTO Start)
+IF %ERRORLEVEL% LEQ 3 (SET Action=END && GOTO Start)
+
+:Start
+Echo %Action%
+IF %Action%==Clean GOTO Clean
+IF %Action%==END GOTO END
 
 :Prep
 Echo Packed Skin.zip
-IF EXIST "%CD%\Browser\Skin.zip" del /F /Q /S "%CD%\Browser\Skin.zip"
-pushd "%CD%\Browser\Skin\"
+IF EXIST .\Browser\Skin.zip del /F /Q /S .\Browser\Skin.zip
+pushd .\Browser\Skin\
 ..\..\Bin\7z.exe a ..\Skin.zip *
 popd popd
 Echo.
 
-Rem GOTO BuildM
-
+:Build
 :BuildC
 IF NOT EXIST "%CD%\Bin\libcef.dll" (
 pushd "%CD%\Bin\"
-
-IF NOT EXIST "PaAvDFm7e8CAYvlMBd6DJ5NhPGc663.zip@token=206a44f4482dcf8e9a288468c79a9107" (
-wget http://files.git.oschina.net/group1/M00/01/E7/PaAvDFm7e8CAYvlMBd6DJ5NhPGc663.zip?token=206a44f4482dcf8e9a288468c79a9107&ts=1506732571&attname=cef_binary_3.2623.1401.gb90a3be.zip
+IF NOT EXIST "cef_binary_3.3071.1649.g98725e6_windows32_client.7z" (
+wget.exe https://github.com/sanwer/libcef/releases/download/3.3071.1649/cef_binary_3.3071.1649.g98725e6_windows32_client.7z
 IF "%errorlevel%"=="1" GOTO error
 )
-7z.exe x "PaAvDFm7e8CAYvlMBd6DJ5NhPGc663.zip@token=206a44f4482dcf8e9a288468c79a9107"
+7z.exe x cef_binary_3.3071.1649.g98725e6_windows32_client.7z
 popd popd
 Echo.
 )
-IF NOT EXIST "%CD%\Bin\libcef.dll" GOTO error
+IF NOT EXIST .\Bin\libcef.dll GOTO error
 
 Echo Build Release Version with CEF
-(Echo #define USE_CEF)>"%CD%\Browser\config.h"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 DEVENV Browser.sln /build "Release|Win32"
 IF "%ERRORLEVEL%"=="1" GOTO Error
 Echo Package
-pushd "%CD%\Bin\"
+pushd ".\Bin\"
 IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
 IF EXIST Browser_CEF.zip DEL /F /Q /S Browser_CEF.zip
-7z.exe a Browser_CEF.zip Browser.exe ReadMe.txt locales cef.pak cef_100_percent.pak cef_extensions.pak d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin
-popd popd
-GOTO End
-
-
-:BuildM
-Echo Build Release Version with miniblink
-(Echo #define USE_MINIBLINK)>"%CD%\Browser\config.h"
-IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
-DEVENV Browser.sln /build "Release|Win32"
-IF "%ERRORLEVEL%"=="1" GOTO Error
-Echo Package
-pushd "%CD%\Bin\"
-IF EXIST .\Bin\Release\Browser RD /S /Q .\Bin\Release\Browser
-IF EXIST Browser_miniblink.zip DEL /F /Q /S Browser_miniblink.zip
-7z.exe a Browser_miniblink.zip Browser.exe node.dll ReadMe.txt plugins\NPSWF32.dll
+7z.exe a Browser_CEF.zip Browser.exe locales cef.pak cef_100_percent.pak cef_200_percent.pak cef_extensions.pak chrome_elf.dll d3dcompiler_43.dll d3dcompiler_47.dll icudtl.dat libcef.dll libEGL.dll libGLESv2.dll natives_blob.bin snapshot_blob.bin
 popd popd
 GOTO End
 

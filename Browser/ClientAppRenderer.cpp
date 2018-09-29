@@ -49,24 +49,6 @@ namespace Browser
 		return load_handler;
 	}
 
-	bool ClientAppRenderer::OnBeforeNavigation(
-		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		CefRefPtr<CefRequest> request,
-		NavigationType navigation_type,
-		bool is_redirect)
-	{
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it) {
-			if ((*it)->OnBeforeNavigation(this, browser, frame, request,
-				navigation_type, is_redirect)) {
-					return true;
-			}
-		}
-
-		return false;
-	}
-
 	void ClientAppRenderer::OnContextCreated(CefRefPtr<CefBrowser> browser,	CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
 	{
 		DelegateSet::iterator it = m_delegates.begin();
