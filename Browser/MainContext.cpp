@@ -9,9 +9,6 @@
 namespace Browser
 {
 	namespace {
-		// The default URL to load in a browser window.
-		const WCHAR kDefaultUrl[] = L"https://www.baidu.com";
-
 		MainContext* g_main_context = NULL;
 
 		// Returns the ARGB value for |color|.
@@ -51,12 +48,6 @@ namespace Browser
 		DCHECK(!g_main_context);
 		g_main_context = this;
 		DCHECK(m_CommandLine.get());
-
-		// Set the main URL.
-		if (m_CommandLine->HasSwitch(Switches::kUrl))
-			m_sMainUrl = m_CommandLine->GetSwitchValue(Switches::kUrl);
-		if (m_sMainUrl.empty())
-			m_sMainUrl = kDefaultUrl;
 
 		if (m_CommandLine->HasSwitch(Switches::kBackgroundColor)) {
 			// Parse the background color value.
@@ -147,6 +138,10 @@ namespace Browser
 				return false;
 
 			m_BrowserDlgManager.reset(new BrowserDlgManager(m_bTerminateWhenAllWindowsClosed));
+
+			// Set the main URL.
+			if (m_CommandLine->HasSwitch(Switches::kUrl))
+				m_sMainUrl = m_CommandLine->GetSwitchValue(Switches::kUrl);
 
 			m_bInitialized = true;
 

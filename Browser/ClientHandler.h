@@ -3,6 +3,7 @@
 #pragma once
 #include <set>
 #include <string>
+#include "include/cef_version.h"
 #include "include/cef_client.h"
 #include "include/wrapper/cef_helpers.h"
 #include "include/wrapper/cef_message_router.h"
@@ -95,7 +96,9 @@ namespace Browser
 			bool fullscreen) OVERRIDE;
 		bool OnConsoleMessage(
 			CefRefPtr<CefBrowser> browser,
-			/*cef_log_severity_t level,*/
+#if CHROME_VERSION_BUILD >= 3239
+			cef_log_severity_t level,
+#endif
 			const CefString& message,
 			const CefString& source,
 			int line) OVERRIDE;
@@ -164,8 +167,11 @@ namespace Browser
 			bool canGoForward) OVERRIDE;
 		void OnLoadStart(
 			CefRefPtr<CefBrowser> browser,
-			CefRefPtr<CefFrame> frame,
-			TransitionType transition_type) OVERRIDE;
+			CefRefPtr<CefFrame> frame
+			#if CHROME_VERSION_BUILD >= 2743
+			,TransitionType transition_type
+#endif
+			) OVERRIDE;
 		void OnLoadEnd(
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
@@ -183,7 +189,9 @@ namespace Browser
 			CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			CefRefPtr<CefRequest> request,
-			/*bool user_gesture,*/
+#if CHROME_VERSION_BUILD >= 3359
+			bool user_gesture,
+#endif
 			bool is_redirect) OVERRIDE;
 		bool OnOpenURLFromTab(
 			CefRefPtr<CefBrowser> browser,

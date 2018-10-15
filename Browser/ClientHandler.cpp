@@ -239,7 +239,9 @@ namespace Browser
 
 	bool ClientHandler::OnConsoleMessage(
 		CefRefPtr<CefBrowser> browser,
-		/*cef_log_severity_t level,*/
+#if CHROME_VERSION_BUILD >= 3239
+		cef_log_severity_t level,
+#endif
 		const CefString& message,
 		const CefString& source,
 		int line)
@@ -455,8 +457,11 @@ namespace Browser
 
 	void ClientHandler::OnLoadStart(
 		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		TransitionType transition_type)
+		CefRefPtr<CefFrame> frame
+#if CHROME_VERSION_BUILD >= 2743
+		,TransitionType transition_type
+#endif
+		)
 	{
 		CEF_REQUIRE_UI_THREAD();
 
@@ -504,10 +509,13 @@ namespace Browser
 	}
 
 
-	bool ClientHandler::OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
+	bool ClientHandler::OnBeforeBrowse(
+		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
-		/*bool user_gesture,*/
+#if CHROME_VERSION_BUILD >= 3359
+		bool user_gesture,
+#endif
 		bool is_redirect)
 	{
 		CEF_REQUIRE_UI_THREAD();
@@ -600,10 +608,6 @@ namespace Browser
 				callback->Continue(true);
 				return true;
 			}
-
-			CefRefPtr<CefX509Certificate> cert = ssl_info->GetX509Certificate();
-			CefRefPtr<CefX509CertPrincipal> subject = cert->GetSubject();
-			CefRefPtr<CefX509CertPrincipal> issuer = cert->GetIssuer();
 
 			// Build a table showing certificate information. Various types of invalid
 			// certificates can be tested using https://badssl.com/.

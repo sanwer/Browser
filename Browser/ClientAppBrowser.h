@@ -9,7 +9,8 @@ namespace Browser
 	class ClientAppBrowser : public ClientApp , public CefBrowserProcessHandler
 	{
 	public:
-		class Delegate : public virtual CefBaseRefCounted {
+		class Delegate : public ClientApp::Delegate
+		{
 		public:
 			virtual void OnBeforeCommandLineProcessing(
 				CefRefPtr<ClientAppBrowser> app,
@@ -34,7 +35,13 @@ namespace Browser
 		static void CreateDelegates(DelegateSet& delegates);
 		// CefApp methods.
 		void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE;
-		void OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar) OVERRIDE;
+		void OnRegisterCustomSchemes(
+#if CHROME_VERSION_BUILD >= 2924
+			CefRawPtr<CefSchemeRegistrar> registrar
+#else
+			CefRefPtr<CefSchemeRegistrar> registrar
+#endif
+			) OVERRIDE;
 		CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() OVERRIDE{return this;}
 
 		// CefBrowserProcessHandler methods.

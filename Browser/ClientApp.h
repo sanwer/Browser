@@ -2,6 +2,7 @@
 #define __BROWSERAPP_H__
 #pragma once
 #include <vector>
+#include "include/cef_version.h"
 #include "include/cef_app.h"
 
 namespace Browser
@@ -16,6 +17,13 @@ namespace Browser
 			RendererProcess,
 			OtherProcess,
 		};
+
+#if CHROME_VERSION_BUILD >= 2924
+		class Delegate : public virtual CefBaseRefCounted
+#else
+		class Delegate : public virtual CefBase
+#endif
+		{};
 
 		// Determine the process type based on command-line arguments.
 		static ProcessType GetProcessType(CefRefPtr<CefCommandLine> command_line);

@@ -9,7 +9,8 @@ namespace Browser
 	class ClientAppRenderer : public ClientApp , public CefRenderProcessHandler
 	{
 	public:
-		class Delegate : public virtual CefBaseRefCounted {
+		class Delegate : public ClientApp::Delegate
+		{
 		public:
 			virtual void OnRenderThreadCreated(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefListValue> extra_info) {}

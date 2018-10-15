@@ -3,8 +3,6 @@
 #pragma once
 #include <set>
 #include <string>
-#include "include/cef_base.h"
-#include "include/cef_app.h"
 #include "include/cef_browser.h"
 #include "include/cef_request.h"
 #include "include/wrapper/cef_message_router.h"

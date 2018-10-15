@@ -6,7 +6,6 @@
 #include "include/base/cef_scoped_ptr.h"
 #include "include/base/cef_thread_checker.h"
 #include "include/internal/cef_types_wrappers.h"
-#include "include/cef_app.h"
 #include "include/cef_command_line.h"
 #include "BrowserDlgManager.h"
 

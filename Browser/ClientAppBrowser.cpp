@@ -75,7 +75,13 @@ namespace Browser
 			(*it)->OnBeforeCommandLineProcessing(this, command_line);
 	}
 
-	void ClientAppBrowser::OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
+	void ClientAppBrowser::OnRegisterCustomSchemes(
+#if CHROME_VERSION_BUILD >= 2924
+		CefRawPtr<CefSchemeRegistrar> registrar
+#else
+		CefRefPtr<CefSchemeRegistrar> registrar
+#endif
+		)
 	{
 		// Default schemes that support cookies.
 		cookie_schemes.push_back("http");
