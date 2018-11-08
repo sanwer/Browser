@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Browser", "Browser\Browser.vcxproj", "{E59198AF-B45C-412D-9077-5EF79A13241D}"
 	ProjectSection(ProjectDependencies) = postProject
+		{95EC0A3D-22B5-4635-948F-194EAE364F42} = {95EC0A3D-22B5-4635-948F-194EAE364F42}
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9} = {A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}
 		{E106ACD7-4E53-4AEE-942B-D0DD426DB34E} = {E106ACD7-4E53-4AEE-942B-D0DD426DB34E}
 	EndProjectSection
@@ -10,6 +11,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DuiLib", "..\DuiLib\DuiLib.vcxproj", "{E106ACD7-4E53-4AEE-942B-D0DD426DB34E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcef_dll_wrapper", "..\libcef\libcef_dll_wrapper.vcxproj", "{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FlashTools", "FlashTools\FlashTools.vcxproj", "{95EC0A3D-22B5-4635-948F-194EAE364F42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +43,12 @@ Global
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|Win32.ActiveCfg = Release|Win32
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|Win32.Build.0 = Release|Win32
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9}.Release|x64.ActiveCfg = Release|x64
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Debug|Win32.ActiveCfg = Debug|Win32
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Debug|Win32.Build.0 = Debug|Win32
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Debug|x64.ActiveCfg = Debug|Win32
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Release|Win32.ActiveCfg = Release|Win32
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Release|Win32.Build.0 = Release|Win32
+		{95EC0A3D-22B5-4635-948F-194EAE364F42}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

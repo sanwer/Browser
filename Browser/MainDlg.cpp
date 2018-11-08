@@ -27,6 +27,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	DuiLib::CPaintManagerUI::SetResourcePath(DuiLib::CPaintManagerUI::GetInstancePath());
 	DuiLib::CPaintManagerUI::SetResourceZip(MAKEINTRESOURCE(IDR_ZIPRES), _T("ZIPRES"));
 
+	HMODULE hFlashTools = NULL;
+#ifdef _DEBUG
+	hFlashTools = LoadLibrary(_T("FlashTools_d.dll"));
+#else
+	hFlashTools = LoadLibrary(_T("FlashTools.dll"));
+#endif
+
 	CefMainArgs main_args(hInstance);
 	CefSettings settings;
 	void* sandbox_info = NULL;
@@ -125,6 +132,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Shut down CEF.
 	context->Shutdown();
 
+	if(hFlashTools){
+		CloseHandle(hFlashTools);
+		hFlashTools= NULL;
+	}
 	::CoUninitialize();
 	return result;
 }
