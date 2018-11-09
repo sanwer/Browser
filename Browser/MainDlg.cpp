@@ -11,6 +11,8 @@
 #include "ClientSwitches.h"
 #include <windows.h>
 #include <objbase.h>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 using namespace Browser;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -28,11 +30,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	DuiLib::CPaintManagerUI::SetResourceZip(MAKEINTRESOURCE(IDR_ZIPRES), _T("ZIPRES"));
 
 	HMODULE hFlashTools = NULL;
+	CDuiString sFlashTools = CPaintManagerUI::GetInstancePath();
 #ifdef _DEBUG
-	hFlashTools = LoadLibrary(_T("FlashTools_d.dll"));
+	sFlashTools.Append(_T("FlashTools_d.dll"));
 #else
-	hFlashTools = LoadLibrary(_T("FlashTools.dll"));
+	sFlashTools.Append(_T("FlashTools.dll"));
 #endif
+	if(PathFileExists(sFlashTools.GetData())){
+		hFlashTools = LoadLibrary(sFlashTools.GetData());
+	}
 
 	CefMainArgs main_args(hInstance);
 	CefSettings settings;

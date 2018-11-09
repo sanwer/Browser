@@ -41,17 +41,11 @@ BOOL WINAPI DetourCreateProcessA(
 	LPPROCESS_INFORMATION lpProcessInformation)
 {
 	std::string strCommandLine = lpCommandLine;
-
-	if (std::string::npos != strCommandLine.find("echo NOT SANDBOXED"))
-	{
+	if (std::string::npos != strCommandLine.find("echo NOT SANDBOXED")){
 		//MessageBoxA(GetActiveWindow(), strCommandLine.c_str(), "createprocesA", MB_OK);
 		return TRUE;
 	}
-	else
-	{
-		return (fpCreateProcessA)(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
-	}
-
+	return (fpCreateProcessA)(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
 }
 
 BOOL WINAPI DetourCreateProcessW(
@@ -67,17 +61,11 @@ BOOL WINAPI DetourCreateProcessW(
 	LPPROCESS_INFORMATION lpProcessInformation)
 {
 	std::wstring strCommandLine(lpCommandLine);
-
-	//MessageBoxW(GetActiveWindow(), strCommandLine.c_str(), L"createproceW", MB_OK);
-	if (std::string::npos != strCommandLine.find(L"echo NOT SANDBOXED"))
-	{
+	if (std::string::npos != strCommandLine.find(L"echo NOT SANDBOXED")){
 		//MessageBoxW(GetActiveWindow(), strCommandLine.c_str(), L"createproceW", MB_OK);
 		return TRUE;
 	}
-	else
-	{
-		return (fpCreateProcessW)(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
-	}
+	return (fpCreateProcessW)(lpApplicationName, lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory, lpStartupInfo, lpProcessInformation);
 }
 // Helper function for MH_CreateHookApi().
 template <typename T>
@@ -92,10 +80,8 @@ BOOL WINAPI Initialize(VOID)
 	if (MH_Initialize() != MH_OK)
 		return FALSE;
 
-	//if (MH_CreateHook(&CreateProcessA, &DetourCreateProcessA, reinterpret_cast<LPVOID*>(&fpCreateProcessA)) == MH_OK)
     if (MH_CreateHookApiEx(L"kernel32", "CreateProcessA", &DetourCreateProcessA, &fpCreateProcessA) != MH_OK)
 		return FALSE;
-    //if (MH_CreateHook(&CreateProcessW, &DetourCreateProcessW, reinterpret_cast<LPVOID*>(&fpCreateProcessW)) != MH_OK)
     if (MH_CreateHookApiEx(L"kernel32", "CreateProcessW", &DetourCreateProcessW, &fpCreateProcessW) != MH_OK)
 		return FALSE;
 	if (MH_EnableHook(&CreateProcessA) != MH_OK)
