@@ -11,8 +11,6 @@
 #include "ClientSwitches.h"
 #include <windows.h>
 #include <objbase.h>
-#include <shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
 using namespace Browser;
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -30,15 +28,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	DuiLib::CPaintManagerUI::SetResourceZip(MAKEINTRESOURCE(IDR_ZIPRES), _T("ZIPRES"));
 
 	HMODULE hFlashTools = NULL;
-	CDuiString sFlashTools = CPaintManagerUI::GetInstancePath();
 #ifdef _DEBUG
-	sFlashTools.Append(_T("FlashTools_d.dll"));
+	hFlashTools = LoadLibrary(_T("FlashTools_d.dll"));
 #else
-	sFlashTools.Append(_T("FlashTools.dll"));
+	hFlashTools = LoadLibrary(_T("FlashTools.dll"));
 #endif
-	if(PathFileExists(sFlashTools.GetData())){
-		hFlashTools = LoadLibrary(sFlashTools.GetData());
-	}
 
 	CefMainArgs main_args(hInstance);
 	CefSettings settings;
@@ -54,12 +48,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	command_line->InitFromString(::GetCommandLineW());
 
 	CefRefPtr<CefApp> app;
-	ClientApp::ProcessType process_type = ClientApp::GetProcessType(command_line);
-	if (process_type == ClientApp::BrowserProcess)
+	if (ClientApp::IsBrowser(command_line))
 		app = new ClientAppBrowser();
-	else if (process_type == ClientApp::RendererProcess)
+	else if (ClientApp::IsRenderer(command_line))
 		app = new ClientAppRenderer();
-	else if (process_type == ClientApp::OtherProcess)
+	else
 		app = new ClientAppOther();
 
 	// Execute the secondary process, if any.

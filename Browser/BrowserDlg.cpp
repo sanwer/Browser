@@ -413,6 +413,7 @@ namespace Browser
 		DCHECK(!m_bInitialized);
 
 		m_Delegate = delegate;
+		m_hParent = hParent;
 		m_bWithControls = true;
 
 		m_rcStart.left = bounds.x;

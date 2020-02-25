@@ -159,7 +159,6 @@
     <ClCompile Include="BrowserUI.cpp" />
     <ClCompile Include="BrowserDlg.cpp" />
     <ClCompile Include="BrowserWindow.cpp" />
-    <ClCompile Include="ClientApp.cpp" />
     <ClCompile Include="ClientAppBrowser.cpp" />
     <ClCompile Include="ClientAppRenderer.cpp" />
     <ClCompile Include="ClientHandler.cpp" />
