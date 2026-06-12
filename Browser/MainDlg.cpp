@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "include/base/cef_scoped_ptr.h"
+#include <memory>
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
 #include "ClientAppBrowser.h"
@@ -27,13 +27,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	DuiLib::CPaintManagerUI::SetResourcePath(DuiLib::CPaintManagerUI::GetInstancePath());
 	DuiLib::CPaintManagerUI::SetResourceZip(MAKEINTRESOURCE(IDR_ZIPRES), _T("ZIPRES"));
 
-	HMODULE hFlashTools = NULL;
-#ifdef _DEBUG
-	hFlashTools = LoadLibrary(_T("FlashTools_d.dll"));
-#else
-	hFlashTools = LoadLibrary(_T("FlashTools.dll"));
-#endif
-
 	CefMainArgs main_args(hInstance);
 	CefSettings settings;
 	void* sandbox_info = NULL;
@@ -55,13 +48,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	else
 		app = new ClientAppOther();
 
-	// Execute the secondary process, if any.
 	int exit_code = CefExecuteProcess(main_args, app, sandbox_info);
 	if (exit_code >= 0)
 		return exit_code;
 
 	// Create the main context object.
-	scoped_ptr<MainContext> context(new MainContext(command_line, true));
+	std::unique_ptr<MainContext> context(new MainContext(command_line, true));
 
 	// Populate the settings based on command line arguments.
 	context->PopulateSettings(&settings);
@@ -73,8 +65,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	sBuffer += L"Browser";
 	CefString(&settings.cache_path).FromWString(sBuffer);
 
-	settings.ignore_certificate_errors = true;
-
 	//settings.command_line_args_disabled = true;
 
 	CefString(&settings.locale).FromASCII("zh-CN");
@@ -83,7 +73,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	settings.log_severity = LOGSEVERITY_DISABLE;
 #endif
 	//settings.multi_threaded_message_loop = true;
-	//settings.single_process = true;
 
 	CefRect rect = CefRect();
 	std::string url,width,height;
@@ -109,21 +98,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Initialize CEF.
 	context->Initialize(main_args, settings, app, sandbox_info);
 
-	// Register scheme handlers.
-	//ClientRunner::RegisterSchemeHandlers();
-
 	// Create the first window.
-	BrowserDlg* pDlg = context->GetBrowserDlgManager()->CreateBrowserDlg(
+	CefRefPtr<BrowserDlg> pDlg = context->GetBrowserDlgManager()->CreateBrowserDlg(
 		NULL,
-		true,		// Show controls.
-		rect,		// Use default system size.
-		url);		// Use default URL.
+		true,
+		rect,
+		url);
 
-	if(pDlg) {
+	if(pDlg.get()) {
 		pDlg->CenterWindow();
 	}
 
-	//DuiLib::CPaintManagerUI::MessageLoop();
 	CefRunMessageLoop();
 
 	DuiLib::CPaintManagerUI::Term();
@@ -131,10 +116,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Shut down CEF.
 	context->Shutdown();
 
-	if(hFlashTools){
-		CloseHandle(hFlashTools);
-		hFlashTools= NULL;
-	}
 	::CoUninitialize();
 	return result;
 }

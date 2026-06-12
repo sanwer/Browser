@@ -2,7 +2,7 @@
 #define __BROWSER_MANAGER_H__
 #pragma once
 #include <set>
-#include "include/base/cef_scoped_ptr.h"
+#include <memory>
 #include "include/cef_command_line.h"
 #include "BrowserDlg.h"
 #include "TempWindow.h"
@@ -38,15 +38,15 @@ namespace Browser
 
 	private:
 		// Allow deletion via scoped_ptr only.
-		friend struct base::DefaultDeleter<BrowserDlgManager>;
+		friend struct std::default_delete<BrowserDlgManager>;
 
 		~BrowserDlgManager();
 
 		void OnBrowserDlgCreated(scoped_refptr<BrowserDlg> pDlg);
 
 		// BrowserDlg::Delegate methods.
-		CefRefPtr<CefRequestContext> GetRequestContext() OVERRIDE;
-		void OnBrowserDlgDestroyed(BrowserDlg* pDlg) OVERRIDE;
+		CefRefPtr<CefRequestContext> GetRequestContext() override;
+		void OnBrowserDlgDestroyed(BrowserDlg* pDlg) override;
 
 		const bool m_bTerminateWhenAllWindowsClosed;
 		bool m_bRequestContextPerBrowser;

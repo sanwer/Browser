@@ -16,21 +16,7 @@ namespace Browser
 		{
 		public:
 			ClientRequestContextHandler() {}
-			bool OnBeforePluginLoad(
-				const CefString& mime_type,
-				const CefString& plugin_url,
-				bool is_main_frame,
-				const CefString& top_origin_url,
-				CefRefPtr<CefWebPluginInfo> plugin_info,
-				PluginPolicy* plugin_policy) /*OVERRIDE*/
-			{
-				// Always allow the PDF plugin to load.
-				if (*plugin_policy != PLUGIN_POLICY_ALLOW && mime_type == "application/pdf") {
-					*plugin_policy = PLUGIN_POLICY_ALLOW;
-					return true;
-				}
-				return false;
-			}
+
 		private:
 			IMPLEMENT_REFCOUNTING(ClientRequestContextHandler);
 		};
@@ -61,7 +47,8 @@ namespace Browser
 		MainContext::Get()->PopulateBrowserSettings(&settings);
 		scoped_refptr<BrowserDlg> pDlg = new BrowserDlg();
 		if(pDlg){
-			pDlg->Init(this, hParent, with_controls, bounds, settings, url.empty() ? MainContext::Get()->GetMainURL() : url);
+			CefString startup_url = url.empty() ? CefString(MainContext::Get()->GetMainURL()) : url;
+			pDlg->Init(this, hParent, with_controls, bounds, settings, startup_url);
 
 			// Store a reference to the root window on the main thread.
 			OnBrowserDlgCreated(pDlg);
@@ -99,14 +86,14 @@ namespace Browser
 			if (browser.get() && browser->GetIdentifier() == browser_id)
 				return *it;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	void BrowserDlgManager::CloseAllWindows(bool force)
 	{
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlgManager::CloseAllWindows, base::Unretained(this), force)));
+			CefPostTask(TID_UI, base::BindRepeating(&BrowserDlgManager::CloseAllWindows, base::Unretained(this), force));
 			return;
 		}
 
@@ -122,7 +109,7 @@ namespace Browser
 	{
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlgManager::OnBrowserDlgCreated, base::Unretained(this), pDlg)));
+			CefPostTask(TID_UI, base::BindRepeating(&BrowserDlgManager::OnBrowserDlgCreated, base::Unretained(this), pDlg));
 			return;
 		}
 

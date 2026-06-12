@@ -5,6 +5,7 @@
 #include "ClientSwitches.h"
 #include <direct.h>
 #include <shlobj.h>
+#include <memory>
 
 namespace Browser
 {
@@ -38,6 +39,7 @@ namespace Browser
 		DCHECK(g_main_context);
 		return g_main_context;
 	}
+
 	MainContext::MainContext(CefRefPtr<CefCommandLine> command_line, bool terminate_when_all_windows_closed)
 		: m_CommandLine(command_line),
 		m_bTerminateWhenAllWindowsClosed(terminate_when_all_windows_closed),
@@ -70,11 +72,26 @@ namespace Browser
 		TCHAR szFolderPath[MAX_PATH];
 		std::string path;
 
-		// Save the file in the user's "My Documents" folder.
-		if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
-			NULL, 0, szFolderPath))) {
-				path = CefString(szFolderPath);
-				path += "\\" + file_name;
+#ifdef _WIN32
+		PWSTR pDownloadPath = nullptr;
+		HRESULT hr = SHGetKnownFolderPath(FOLDERID_Downloads, KF_FLAG_CREATE, NULL, &pDownloadPath);
+		if (SUCCEEDED(hr) && pDownloadPath) {
+			wcscpy_s(szFolderPath, MAX_PATH, pDownloadPath);
+			CoTaskMemFree(pDownloadPath);
+		} else {
+			hr = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_CREATE, NULL, &pDownloadPath);
+			if (SUCCEEDED(hr) && pDownloadPath) {
+				wcscpy_s(szFolderPath, MAX_PATH, pDownloadPath);
+				CoTaskMemFree(pDownloadPath);
+			}
+		}
+#else
+		GetTempPath(MAX_PATH, szFolderPath);
+#endif
+
+		path = CefString(szFolderPath);
+		if (!path.empty() && !file_name.empty()) {
+			path += "\\" + file_name;
 		}
 
 		return path;
@@ -85,10 +102,11 @@ namespace Browser
 		if (_getcwd(szWorkingDir, MAX_PATH) == NULL) {
 			szWorkingDir[0] = 0;
 		} else {
-			// Add trailing path separator.
 			size_t len = strlen(szWorkingDir);
-			szWorkingDir[len] = '\\';
-			szWorkingDir[len + 1] = 0;
+			if (len < MAX_PATH) {
+				szWorkingDir[len] = '\\';
+				szWorkingDir[len + 1] = 0;
+			}
 		}
 		return szWorkingDir;
 	}
@@ -102,19 +120,30 @@ namespace Browser
 	}
 
 	void MainContext::PopulateSettings(CefSettings* settings) {
+		DCHECK(settings);
+		if (!settings) {
+			return;
+		}
+
 		settings->multi_threaded_message_loop =
 			m_CommandLine->HasSwitch(Switches::kMultiThreadedMessageLoop);
 
 		CefString(&settings->cache_path) =
 			m_CommandLine->GetSwitchValue(Switches::kCachePath);
 
-		if (m_CommandLine->HasSwitch(Switches::kOffScreenRenderingEnabled))
+		if (m_CommandLine->HasSwitch(Switches::kOffScreenRenderingEnabled)) {
 			settings->windowless_rendering_enabled = true;
+		}
 
 		settings->background_color = m_BackgroundColor;
 	}
 
 	void MainContext::PopulateBrowserSettings(CefBrowserSettings* settings) {
+		DCHECK(settings);
+		if (!settings) {
+			return;
+		}
+
 		if (m_CommandLine->HasSwitch(Switches::kOffScreenFrameRate)) {
 			settings->windowless_frame_rate = atoi(m_CommandLine->
 				GetSwitchValue(Switches::kOffScreenFrameRate).ToString().c_str());
@@ -134,14 +163,16 @@ namespace Browser
 			DCHECK(!m_bInitialized);
 			DCHECK(!m_bShutdown);
 
-			if (!CefInitialize(args, settings, application, windows_sandbox_info))
+			if (!CefInitialize(args, settings, application, windows_sandbox_info)) {
 				return false;
+			}
 
 			m_BrowserDlgManager.reset(new BrowserDlgManager(m_bTerminateWhenAllWindowsClosed));
-
+ 
 			// Set the main URL.
-			if (m_CommandLine->HasSwitch(Switches::kUrl))
+			if (m_CommandLine->HasSwitch(Switches::kUrl)) {
 				m_sMainUrl = m_CommandLine->GetSwitchValue(Switches::kUrl);
+			}
 
 			m_bInitialized = true;
 

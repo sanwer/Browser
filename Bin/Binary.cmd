@@ -1,23 +1,29 @@
 @Echo Off
-SET Version=%1
-if "%Version%" =="" (SET Version=3.2623.1401.gb90a3be)
-for /f "tokens=1-4 delims=." %%a in ("%Version%") do ((set V1=%%a)&(set V2=%%b)&(set V3=%%c)&(set V4=%%d))
-IF EXIST .\Bin ( PUSHD .\Bin ) else ( PUSHD %CD% )
-IF NOT EXIST libcef.dll (
-  Echo Download %V1%.%V2%.%V3%.%V4% binary files
-  IF NOT EXIST "cef_binary_%Version%_windows32.7z" (
-    wget.exe https://github.com/sanwer/libcef/releases/download/%V1%.%V2%.%V3%/cef_binary_%Version%_windows32.7z
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET BIN_DIR=%~dp0
+SET CEF_URL=https://gitee.com/sanwer/libcef/releases/download/145.0.28/cef_binary_145.0.28_g51162e8_windows64.7z
+SET CEF_BIN=cef_binary_145.0.28_g51162e8_windows64.7z
+SET CEF_DLL="%BIN_DIR%x64\libcef.dll"
+
+PUSHD "%BIN_DIR%"
+IF NOT EXIST %CEF_DLL% (
+    Echo download %BaseVersion% binary files
+    IF NOT EXIST %CEF_BIN% (
+        wget.exe -q --show-progress -P %BIN_DIR% %CEF_URL%
+        IF %ERRORLEVEL%==1 GOTO ErrorBinary
+    )
+    7z.exe x -bsp1 -bso0 %CEF_BIN% -o"%BIN_DIR%x64\"
     IF %ERRORLEVEL%==1 GOTO ErrorBinary
-  )
-  7z.exe x cef_binary_%Version%_windows32.7z
-  IF %ERRORLEVEL%==1 GOTO ErrorBinary
-  IF NOT EXIST libcef.dll GOTO ErrorBinary
+    IF NOT EXIST %CEF_DLL% GOTO ErrorBinary
 )
 GOTO EndBinary
 
 :ErrorBinary
 Echo [ERROR]: There was an error in downloading binary files.
 PAUSE
+ENDLOCAL
+EXIT /B 1
 
 :EndBinary
 POPD
+ENDLOCAL

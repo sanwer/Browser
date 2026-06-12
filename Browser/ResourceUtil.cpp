@@ -29,7 +29,7 @@ namespace Browser
 		int GetResourceId(const char* resource_name) {
 			// Map of resource labels to BINARY id values.
 			static struct _resource_map {
-				char* name;
+				const char* name;
 				int id;
 			} resource_map[] = {
 				{"Logo.png", IDS_LOGO_PNG},
@@ -37,14 +37,13 @@ namespace Browser
 			};
 
 			for (int i = 0; i < sizeof(resource_map)/sizeof(_resource_map); ++i) {
-				if (!stricmp(resource_map[i].name, resource_name))
+				if (!_stricmp(resource_map[i].name, resource_name))
 					return resource_map[i].id;
 			}
 
 			return 0;
 		}
 
-		// Provider of binary resources.
 		class BinaryResourceProvider : public CefResourceManager::Provider {
 		public:
 			explicit BinaryResourceProvider(const std::string& url_path)
@@ -52,12 +51,11 @@ namespace Browser
 					DCHECK(!url_path.empty());
 			}
 
-			bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+			bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
 				CEF_REQUIRE_IO_THREAD();
 
 				const std::string& url = request->url();
 				if (url.find(url_path_) != 0L) {
-					// Not handled by this provider.
 					return false;
 				}
 
@@ -84,7 +82,7 @@ namespace Browser
 			DISALLOW_COPY_AND_ASSIGN(BinaryResourceProvider);
 		};
 
-	}  // namespace
+	}
 
 	bool LoadBinaryResource(const char* resource_name, std::string& resource_data) {
 		int resource_id = GetResourceId(resource_name);
@@ -99,25 +97,28 @@ namespace Browser
 			return true;
 		}
 
-		NOTREACHED();  // The resource should be found.
+		NOTREACHED();
 		return false;
 	}
 
 	CefRefPtr<CefStreamReader> GetBinaryResourceReader(const char* resource_name) {
 		int resource_id = GetResourceId(resource_name);
 		if (resource_id == 0)
-			return NULL;
+			return nullptr;
 
 		DWORD dwSize;
 		LPBYTE pBytes;
 
 		if (LoadBinaryResource(resource_id, dwSize, pBytes)) {
 			return CefStreamReader::CreateForHandler(
-				new CefByteReadHandler(pBytes, dwSize, NULL));
+				new CefByteReadHandler(
+					reinterpret_cast<const unsigned char*>(pBytes),
+					static_cast<size_t>(dwSize),
+					nullptr));
 		}
 
-		NOTREACHED();  // The resource should be found.
-		return NULL;
+		NOTREACHED();
+		return nullptr;
 	}
 
 	CefResourceManager::Provider* CreateBinaryResourceProvider(const std::string& url_path)

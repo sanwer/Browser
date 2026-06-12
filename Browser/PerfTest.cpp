@@ -20,7 +20,7 @@ namespace Browser
 				CefRefPtr<CefV8Value> object,
 				const CefV8ValueList& arguments,
 				CefRefPtr<CefV8Value>& retval,
-				CefString& exception) OVERRIDE
+				CefString& exception) override
 			{
 				if (name == kGetPerfTests) {
 					retval = CefV8Value::CreateString("Performance Test");
@@ -31,7 +31,6 @@ namespace Browser
 			IMPLEMENT_REFCOUNTING(V8Handler);
 		};
 
-		// Handle bindings in the render process.
 		class RenderDelegate : public ClientAppRenderer::Delegate
 		{
 		public:
@@ -40,12 +39,11 @@ namespace Browser
 			virtual void OnContextCreated(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefBrowser> browser,
 				CefRefPtr<CefFrame> frame,
-				CefRefPtr<CefV8Context> context) OVERRIDE {
+				CefRefPtr<CefV8Context> context) override {
 					CefRefPtr<CefV8Value> object = context->GetGlobal();
 
 					CefRefPtr<CefV8Handler> handler = new V8Handler();
 
-					// Bind functions.
 					object->SetValue(kGetPerfTests,
 						CefV8Value::CreateFunction(kGetPerfTests, handler),
 						V8_PROPERTY_ATTRIBUTE_READONLY);

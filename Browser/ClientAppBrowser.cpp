@@ -11,32 +11,17 @@ namespace Browser
 		CreateDelegates(m_delegates);
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////
-	// CefApp methods.
 	void ClientAppBrowser::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line)
 	{
 		if (process_type.empty())
 		{
-			// 设置子进程路径很关键，如果不设置，可能会触发cef的一个bug
-			// cef在LoadUrl建立渲染进程时，会查找子进程的路径，可能会引发一个bug导致IDE在debug状态时卡死
-			// 这里指定好子进程路径就可以了
+			//Single process mode
+			command_line->AppendSwitch("single-process");
 
-			// 但是使用sandbox的话，不允许使用另外的子进程;不使用sandbox的话，第一次加载flash插件时会弹出个命令提示行，这是cef的bug。flash与子进程二者不可兼得
-			//command_line->AppendSwitchWithValue("browser-subprocess-path", "render.exe");
+			//Disable Same-Origin Policy
+			command_line->AppendSwitch("--disable-web-security");
 
-			//单进程模式
-			//command_line->AppendSwitch("single-process");
-
-			//command_line->AppendSwitch("--disable-web-security");//关闭同源策略
-
-			//使用系统Flash
-			command_line->AppendSwitch("--enable-system-flash");
-
-			//指定Flash
-			//command_line->AppendSwitchWithValue("ppapi-flash-version", "20.0.0.228");
-			//command_line->AppendSwitchWithValue("ppapi-flash-path", "plugins\\pepflashplayer.dll");
-
-			//同一个域下的使用同一个渲染进程
+			//Using the same rendering process in the same domain
 			command_line->AppendSwitch("process-per-site");
 			command_line->AppendSwitch("enable-caret-browsing");
 			command_line->AppendSwitch("auto-positioned-ime-window");
@@ -70,9 +55,10 @@ namespace Browser
 				command_line->AppendSwitch("enable-begin-frame-scheduling");
 			}
 		}
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it)
+		
+		for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it) {
 			(*it)->OnBeforeCommandLineProcessing(this, command_line);
+		}
 	}
 
 	void ClientAppBrowser::OnRegisterCustomSchemes(
@@ -92,27 +78,19 @@ namespace Browser
 	// CefBrowserProcessHandler methods.
 	void ClientAppBrowser::OnContextInitialized()
 	{
-		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(NULL);
+		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(nullptr);
 		DCHECK(manager.get());
-		manager->SetSupportedSchemes(cookie_schemes, NULL);
 
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it)
+		for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it) {
 			(*it)->OnContextInitialized(this);
+		}
 	}
 
 	void ClientAppBrowser::OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> command_line)
 	{
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it)
+		for (auto it = m_delegates.begin(); it != m_delegates.end(); ++it) {
 			(*it)->OnBeforeChildProcessLaunch(this, command_line);
-	}
-
-	void ClientAppBrowser::OnRenderProcessThreadCreated(CefRefPtr<CefListValue> extra_info)
-	{
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it)
-			(*it)->OnRenderProcessThreadCreated(this, extra_info);
+		}
 	}
 
 	// static

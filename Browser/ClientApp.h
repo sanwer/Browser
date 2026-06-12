@@ -1,5 +1,5 @@
-#ifndef __CLIENT_APP_H__
-#define __CLIENT_APP_H__
+#ifndef __CLIENTAPP_H__
+#define __CLIENTAPP_H__
 #pragma once
 #include <vector>
 #include "include/cef_version.h"

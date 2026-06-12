@@ -22,11 +22,11 @@ namespace Browser
 		DCHECK(CefCurrentlyOn(TID_UI));
 
 		CefWindowInfo window_info;
-		RECT wnd_rect = {rect.x, rect.y, rect.x + rect.width, rect.y + rect.height};
-		window_info.SetAsChild(parent_handle, wnd_rect);
+		CefRect cef_rect(rect.x, rect.y, rect.width, rect.height);
+		window_info.SetAsChild(parent_handle, cef_rect);
 
 		CefBrowserHost::CreateBrowser(window_info, m_ClientHandler,
-			url.empty() ? m_ClientHandler->StartupUrl() : url, settings, request_context);
+			url.empty() ? CefString(m_ClientHandler->StartupUrl()) : url, settings, nullptr, request_context);
 	}
 
 	void BrowserWindow::GetPopupConfig(CefWindowHandle temp_handle,
@@ -36,7 +36,7 @@ namespace Browser
 	{
 		// Note: This method may be called on any thread.
 		// The window will be properly sized after the browser is created.
-		windowInfo.SetAsChild(temp_handle, RECT());
+		windowInfo.SetAsChild(temp_handle, CefRect());
 		client = m_ClientHandler;
 	}
 
@@ -119,7 +119,7 @@ namespace Browser
 		DCHECK(CefCurrentlyOn(TID_UI));
 
 		m_ClientHandler->DetachDelegate();
-		m_ClientHandler = NULL;
+		m_ClientHandler = nullptr;
 
 		// |this| may be deleted.
 		m_Delegate->OnBrowserAllClosed();

@@ -1,5 +1,5 @@
 # Browser(CEF浏览器)
-  基于CEF3与Duilib界面库，支持Flash PPAPI插件(系统自带或打包内置)，支持多标签页浏览。
+  基于CEF3与Duilib界面库，支持多标签页浏览。
 
 ### 编译
 1、获取Duilib
@@ -24,5 +24,5 @@ Build.cmd
 + https://github.com/sanwer/libcef/releases
 + https://gitee.com/sanwer/libcef/releases
 
-### 联系方式
-Mail/Alipay: sanwer@qq.com，QQ: 6538316，仅提供付费技术支持。
+### 技术支持(付费)
+Mail/Alipay: sanwer@qq.com，QQ: 6538316

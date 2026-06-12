@@ -133,32 +133,38 @@ namespace Browser
 
 		// Read command line settings.
 		CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
-		m_bMouseCursorChangeDisabled = command_line->HasSwitch(Switches::kMouseCursorChangeDisabled);
+
+		m_bInitialNavigation = true;
 	}
 
 	void ClientHandler::DetachDelegate()
 	{
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::DetachDelegate, this)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::DetachDelegate, this));
 			return;
 		}
 
 		DCHECK(m_Delegate);
-		m_Delegate = NULL;
+		m_Delegate = nullptr;
 	}
 
 	bool ClientHandler::OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		if (m_MessageRouter->OnProcessMessageReceived(browser, source_process,message)) {
+		if (m_MessageRouter->OnProcessMessageReceived(browser, frame, source_process, message)) {
 			return true;
 		}
 
 		return false;
+	}
+
+	bool ClientHandler::OnSetFocus(CefRefPtr<CefBrowser> browser, FocusSource source) {
+		return !ShouldRequestFocus();
 	}
 
 	void ClientHandler::OnBeforeContextMenu(
@@ -168,10 +174,10 @@ namespace Browser
 		CefRefPtr<CefMenuModel> model)
 	{
 		CEF_REQUIRE_UI_THREAD();
-		//model->Clear();//清空上下文菜单项
+		//model->Clear();//Clear Context Menu
 
-		//model->Remove(MENU_ID_PRINT);//删除打印菜单
-		//model->Remove(MENU_ID_VIEW_SOURCE);//删除查看源码菜单
+		//model->Remove(MENU_ID_PRINT);//Delete Print Menu Item
+		//model->Remove(MENU_ID_VIEW_SOURCE);//Delete View Source Code Menu Item
 
 		model->AddItem(CLIENT_ID_REFRESH, CefString(L"Refresh(&R)"));
 		model->AddItem(CLIENT_ID_SHOW_DEVTOOLS, CefString(L"Show DevTools"));
@@ -283,7 +289,7 @@ namespace Browser
 		CEF_REQUIRE_UI_THREAD();
 	}
 
-	void ClientHandler::OnBeforeDownload(CefRefPtr<CefBrowser> browser,
+	bool ClientHandler::OnBeforeDownload(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefDownloadItem> download_item,
 		const CefString& suggested_name,
 		CefRefPtr<CefBeforeDownloadCallback> callback)
@@ -291,6 +297,7 @@ namespace Browser
 		CEF_REQUIRE_UI_THREAD();
 		// Continue the download and show the "Save As" dialog.
 		callback->Continue(MainContext::Get()->GetDownloadPath(suggested_name), true);
+		return true;
 	}
 
 	void ClientHandler::OnDownloadUpdated(CefRefPtr<CefBrowser> browser,
@@ -322,6 +329,7 @@ namespace Browser
 
 	void ClientHandler::OnDraggableRegionsChanged(
 		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
 		const std::vector<CefDraggableRegion>& regions)
 	{
 		CEF_REQUIRE_UI_THREAD();
@@ -347,6 +355,7 @@ namespace Browser
 	bool ClientHandler::OnBeforePopup(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
+		int popup_id,
 		const CefString& target_url,
 		const CefString& target_frame_name,
 		cef_window_open_disposition_t target_disposition,
@@ -355,13 +364,14 @@ namespace Browser
 		CefWindowInfo& windowInfo,
 		CefRefPtr<CefClient>& client,
 		CefBrowserSettings& settings,
+		CefRefPtr<CefDictionaryValue>& extra_info,
 		bool* no_javascript_access)
 	{
 		CEF_REQUIRE_IO_THREAD();
 		int nBrowserId = browser->GetIdentifier();
 
 		// Return true to cancel the popup window.
-		if(target_disposition == WOD_NEW_POPUP){
+		if(target_disposition == CEF_WOD_NEW_POPUP){
 			return !CreatePopupWindow(browser, false, popupFeatures, windowInfo, client,settings);
 		}else{
 			NotifyNewTab(browser,target_url);
@@ -391,10 +401,6 @@ namespace Browser
 		}
 		m_BrowserList.push_back(browser);
 
-		// Disable mouse cursor change if requested via the command-line flag.
-		if (m_bMouseCursorChangeDisabled)
-			browser->GetHost()->SetMouseCursorChangeDisabled(true);
-
 		NotifyBrowserCreated(browser);
 	}
 
@@ -405,7 +411,7 @@ namespace Browser
 		NotifyBrowserClosing(browser);
 
 		HWND hWnd = browser->GetHost()->GetWindowHandle();
-		browser = NULL;
+		browser = nullptr;
 		if(hWnd){
 			PostMessage(hWnd, WM_CLOSE, 0, 0);
 		}
@@ -427,7 +433,6 @@ namespace Browser
 		{
 			if ((*item)->IsSame(browser)){
 				m_BrowserList.erase(item);
-				browser = NULL;
 				break;
 			}
 		}
@@ -443,7 +448,7 @@ namespace Browser
 				delete *(it);
 			}
 			m_MessageHandlerSet.clear();
-			m_MessageRouter = NULL;
+			m_MessageRouter = nullptr;
 			NotifyBrowserAllClosed();
 		}
 	}
@@ -524,11 +529,75 @@ namespace Browser
 		return false;
 	}
 
+	CefRefPtr<CefResourceRequestHandler> ClientHandler::GetResourceRequestHandler(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefRefPtr<CefRequest> request,
+		bool is_navigation,
+		bool is_download,
+		const CefString& request_initiator,
+		bool& disable_default_handling)
+	{
+		CEF_REQUIRE_IO_THREAD();
+		return this;
+	}
+
+	bool ClientHandler::OnOpenURLFromTab(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		const CefString& target_url,
+		cef_window_open_disposition_t target_disposition,
+		bool user_gesture)
+	{
+
+		NotifyNewTab(browser,target_url);
+		return true;
+
+		// Open the URL in the current browser window.
+		//return false;
+	}
+
+
+	bool ClientHandler::OnCertificateError(
+		CefRefPtr<CefBrowser> browser,
+		cef_errorcode_t cert_error,
+		const CefString& request_url,
+		CefRefPtr<CefSSLInfo> ssl_info,
+		CefRefPtr<CefCallback> callback) {
+			CEF_REQUIRE_UI_THREAD();
+
+			if (cert_error == ERR_CERT_AUTHORITY_INVALID &&
+				request_url.ToString().find("https://www.magpcss.org/") == 0U) {
+				// Allow the CEF Forum to load. It has a self-signed certificate.
+				callback->Continue();
+				return true;
+			}
+
+			// Build a table showing certificate information. Various types of invalid
+			// certificates can be tested using https://badssl.com/.
+			std::stringstream ss;
+			ss << "<h3>X.509 Certificate Information:</h3>"
+				"<table border=1><tr><th>Field</th><th>Value</th></tr>";
+
+			ss << "</table> * Displayed value is base64 encoded.";
+
+			// Load the error page.
+			LoadErrorPage(browser->GetMainFrame(), request_url, cert_error, ss.str());
+
+			return false;
+	}
+
+	void ClientHandler::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, CefRequestHandler::TerminationStatus status, int error_code, const CefString& error_string)
+	{
+		CEF_REQUIRE_UI_THREAD();
+		m_MessageRouter->OnRenderProcessTerminated(browser);
+	}
+
 	cef_return_value_t ClientHandler::OnBeforeResourceLoad(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefRequest> request,
-		CefRefPtr<CefRequestCallback> callback)
+		CefRefPtr<CefCallback> callback)
 	{
 		CEF_REQUIRE_IO_THREAD();
 		return m_ResourceManager->OnBeforeResourceLoad(browser, frame, request, callback);
@@ -550,83 +619,21 @@ namespace Browser
 		CefRefPtr<CefResponse> response)
 	{
 		CEF_REQUIRE_IO_THREAD();
-		return NULL;
+		return nullptr;
 	}
 
-	bool ClientHandler::OnOpenURLFromTab(
+	void ClientHandler::OnProtocolExecution(
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
-		const CefString& target_url,
-		cef_window_open_disposition_t target_disposition,
-		bool user_gesture)
-	{
-
-		NotifyNewTab(browser,target_url);
-		return true;
-
-		// Open the URL in the current browser window.
-		//return false;
-	}
-
-	bool ClientHandler::OnQuotaRequest(CefRefPtr<CefBrowser> browser,
-		const CefString& origin_url,
-		int64 new_size,
-		CefRefPtr<CefRequestCallback> callback) {
-			CEF_REQUIRE_IO_THREAD();
-
-			static const int64 max_size = 1024 * 1024 * 20;  // 20mb.
-
-			// Grant the quota request if the size is reasonable.
-			callback->Continue(new_size <= max_size);
-			return true;
-	}
-
-	void ClientHandler::OnProtocolExecution(CefRefPtr<CefBrowser> browser,
-		const CefString& url,
+		CefRefPtr<CefRequest> request,
 		bool& allow_os_execution) {
 			CEF_REQUIRE_UI_THREAD();
 
-			std::string urlStr = url;
+			std::string urlStr = request->GetURL();
 
 			// Allow OS execution of Spotify URIs.
 			if (urlStr.find("spotify:") == 0)
 				allow_os_execution = true;
-	}
-
-
-	bool ClientHandler::OnCertificateError(
-		CefRefPtr<CefBrowser> browser,
-		ErrorCode cert_error,
-		const CefString& request_url,
-		CefRefPtr<CefSSLInfo> ssl_info,
-		CefRefPtr<CefRequestCallback> callback) {
-			CEF_REQUIRE_UI_THREAD();
-
-			if (cert_error == ERR_CERT_AUTHORITY_INVALID &&
-				request_url.ToString().find("https://www.magpcss.org/") == 0U) {
-				// Allow the CEF Forum to load. It has a self-signed certificate.
-				callback->Continue(true);
-				return true;
-			}
-
-			// Build a table showing certificate information. Various types of invalid
-			// certificates can be tested using https://badssl.com/.
-			std::stringstream ss;
-			ss << "<h3>X.509 Certificate Information:</h3>"
-				"<table border=1><tr><th>Field</th><th>Value</th></tr>";
-
-			ss << "</table> * Displayed value is base64 encoded.";
-
-			// Load the error page.
-			LoadErrorPage(browser->GetMainFrame(), request_url, cert_error, ss.str());
-
-			return false;  // Cancel the request.
-	}
-
-	void ClientHandler::OnRenderProcessTerminated(CefRefPtr<CefBrowser> browser, TerminationStatus status)
-	{
-		CEF_REQUIRE_UI_THREAD();
-		m_MessageRouter->OnRenderProcessTerminated(browser);
 	}
 
 	CefRefPtr<CefBrowser> ClientHandler::GetBrowser(int nBrowserId)
@@ -642,7 +649,7 @@ namespace Browser
 				return (*item);
 			}
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	void ClientHandler::ShowDevTools(CefRefPtr<CefBrowser> browser, const CefPoint& inspect_element_at)
@@ -687,7 +694,7 @@ namespace Browser
 	{
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserCreated, this, browser)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyBrowserCreated, this, browser));
 			return;
 		}
 
@@ -699,7 +706,7 @@ namespace Browser
 	{
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserClosing, this, browser)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyBrowserClosing, this, browser));
 			return;
 		}
 
@@ -710,7 +717,7 @@ namespace Browser
 	void ClientHandler::NotifyBrowserClosed(CefRefPtr<CefBrowser> browser) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserClosed, this, browser)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyBrowserClosed, this, browser));
 			return;
 		}
 
@@ -721,7 +728,7 @@ namespace Browser
 	void ClientHandler::NotifyBrowserAllClosed() {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyBrowserAllClosed, this)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyBrowserAllClosed, this));
 			return;
 		}
 
@@ -732,7 +739,7 @@ namespace Browser
 	void ClientHandler::NotifyAddress(CefRefPtr<CefBrowser> browser, const CefString& url) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyAddress, this, browser, url)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyAddress, this, browser, url));
 			return;
 		}
 
@@ -743,7 +750,7 @@ namespace Browser
 	void ClientHandler::NotifyTitle(CefRefPtr<CefBrowser> browser, const CefString& title) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyTitle, this, browser, title)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyTitle, this, browser, title));
 			return;
 		}
 
@@ -754,7 +761,7 @@ namespace Browser
 	void ClientHandler::NotifyFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyFullscreen, this, browser, fullscreen)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyFullscreen, this, browser, fullscreen));
 			return;
 		}
 
@@ -765,7 +772,7 @@ namespace Browser
 	void ClientHandler::NotifyLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyLoadingState, this, browser, isLoading, canGoBack, canGoForward)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyLoadingState, this, browser, isLoading, canGoBack, canGoForward));
 			return;
 		}
 
@@ -776,7 +783,7 @@ namespace Browser
 	void ClientHandler::NotifyDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) {
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyDraggableRegions, this, browser, regions)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyDraggableRegions, this, browser, regions));
 			return;
 		}
 
@@ -790,12 +797,28 @@ namespace Browser
 			return;
 		if (!CefCurrentlyOn(TID_UI)) {
 			// Execute this method on the main thread.
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&ClientHandler::NotifyNewTab, this, browser, url)));
+			CefPostTask(TID_UI, base::BindRepeating(&ClientHandler::NotifyNewTab, this, browser, url));
 			return;
 		}
 
 		if (m_Delegate){
 			m_Delegate->OnNewTab(browser, url);
 		}
+	}
+
+	bool ClientHandler::ShouldRequestFocus()
+	{
+		CEF_REQUIRE_UI_THREAD();
+
+		if (m_bInitialNavigation) {
+			CefRefPtr<CefCommandLine> command_line =
+				CefCommandLine::GetGlobalCommandLine();
+			if (command_line->HasSwitch(Switches::kNoActivate)) {
+				// Don't give focus to the browser on creation.
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

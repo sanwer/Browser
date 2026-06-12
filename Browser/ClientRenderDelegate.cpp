@@ -15,8 +15,7 @@ namespace Browser
 			ClientRenderDelegate() {
 			}
 
-			virtual void OnWebKitInitialized(CefRefPtr<ClientAppRenderer> app) OVERRIDE {
-				// Create the renderer-side router for query handling.
+			virtual void OnWebKitInitialized(CefRefPtr<ClientAppRenderer> app) override {
 				CefMessageRouterConfig config;
 				m_MessageRouter = CefMessageRouterRendererSide::Create(config);
 			}
@@ -24,30 +23,31 @@ namespace Browser
 			virtual void OnContextCreated(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefBrowser> browser,
 				CefRefPtr<CefFrame> frame,
-				CefRefPtr<CefV8Context> context) OVERRIDE {
+				CefRefPtr<CefV8Context> context) override {
 					m_MessageRouter->OnContextCreated(browser,  frame, context);
 			}
 
 			virtual void OnContextReleased(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefBrowser> browser,
 				CefRefPtr<CefFrame> frame,
-				CefRefPtr<CefV8Context> context) OVERRIDE {
+				CefRefPtr<CefV8Context> context) override {
 					m_MessageRouter->OnContextReleased(browser,  frame, context);
 			}
 
 			virtual void OnFocusedNodeChanged(CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefBrowser> browser,
 				CefRefPtr<CefFrame> frame,
-				CefRefPtr<CefDOMNode> node) OVERRIDE {
+				CefRefPtr<CefDOMNode> node) override {
 			}
 
 			virtual bool OnProcessMessageReceived(
 				CefRefPtr<ClientAppRenderer> app,
 				CefRefPtr<CefBrowser> browser,
+				CefRefPtr<CefFrame> frame,
 				CefProcessId source_process,
-				CefRefPtr<CefProcessMessage> message) OVERRIDE {
+				CefRefPtr<CefProcessMessage> message) override {
 					return m_MessageRouter->OnProcessMessageReceived(
-						browser, source_process, message);
+						browser, frame, source_process, message);
 			}
 
 		private:

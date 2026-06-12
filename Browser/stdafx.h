@@ -3,15 +3,15 @@
 #pragma once
 
 #ifndef WINVER
-#define WINVER 0x0501
+#define WINVER 0x0A00
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0A00
 #endif
 
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS 0x0410
+#define _WIN32_WINDOWS 0x0603
 #endif
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -19,7 +19,9 @@
 #endif
 
 #define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
 
+#include <windows.h>
 #include "resource.h"
 
 #ifdef _DEBUG

@@ -21,10 +21,6 @@ namespace Browser
 			virtual void OnBeforeChildProcessLaunch(
 				CefRefPtr<ClientAppBrowser> app,
 				CefRefPtr<CefCommandLine> command_line) {}
-
-			virtual void OnRenderProcessThreadCreated(
-				CefRefPtr<ClientAppBrowser> app,
-				CefRefPtr<CefListValue> extra_info) {}
 		};
 		typedef std::set<CefRefPtr<Delegate> > DelegateSet;
 
@@ -33,21 +29,21 @@ namespace Browser
 	private:
 		// Creates all of the Delegate objects.
 		static void CreateDelegates(DelegateSet& delegates);
+
 		// CefApp methods.
-		void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) OVERRIDE;
+		void OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) override;
 		void OnRegisterCustomSchemes(
 #if CHROME_VERSION_BUILD >= 2924
 			CefRawPtr<CefSchemeRegistrar> registrar
 #else
 			CefRefPtr<CefSchemeRegistrar> registrar
 #endif
-			) OVERRIDE;
-		CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() OVERRIDE{return this;}
+			) override;
+		CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override{return this;}
 
 		// CefBrowserProcessHandler methods.
-		void OnContextInitialized() OVERRIDE;
-		void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> command_line) OVERRIDE;
-		void OnRenderProcessThreadCreated(CefRefPtr<CefListValue> extra_info) OVERRIDE;
+		void OnContextInitialized() override;
+		void OnBeforeChildProcessLaunch(CefRefPtr<CefCommandLine> command_line) override;
 
 	private:
 		DelegateSet m_delegates;

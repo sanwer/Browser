@@ -3,7 +3,7 @@
 #pragma once
 #include <string>
 #include "include/base/cef_ref_counted.h"
-#include "include/base/cef_scoped_ptr.h"
+#include <memory>
 #include "include/base/cef_thread_checker.h"
 #include "include/internal/cef_types_wrappers.h"
 #include "include/cef_command_line.h"
@@ -21,8 +21,8 @@ namespace Browser
 		// Returns the singleton instance of this object.
 		static MainContext* Get();
 		MainContext(CefRefPtr<CefCommandLine> command_line, bool terminate_when_all_windows_closed);
-  
- public:
+
+	public:
 		// Returns the full path to the console log file.
 		std::string GetConsoleLogPath();
 
@@ -58,7 +58,7 @@ namespace Browser
 
 	private:
 		// Allow deletion via scoped_ptr only.
-		friend struct base::DefaultDeleter<MainContext>;
+		friend struct std::default_delete<MainContext>;
 		virtual ~MainContext();
 
 		// Returns true if the context is in a valid state (initialized and not yet
@@ -79,7 +79,7 @@ namespace Browser
 		std::wstring m_sMainUrl;
 		cef_color_t m_BackgroundColor;
 
-		scoped_ptr<BrowserDlgManager> m_BrowserDlgManager;
+		std::unique_ptr<BrowserDlgManager> m_BrowserDlgManager;
 
 		// Used to verify that methods are called on the correct thread.
 		base::ThreadChecker m_ThreadChecker;

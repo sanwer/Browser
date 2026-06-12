@@ -1,6 +1,7 @@
 #ifndef __BROWSER_WND_H__
 #define __BROWSER_WND_H__
 #pragma once
+#include <memory>
 #include "MessageLoop.h"
 #include "BrowserWindow.h"
 #include "ClientApp.h"
@@ -35,15 +36,15 @@ namespace Browser
 
 	private:
 		// BrowserWindow::Delegate methods.
-		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnBrowserClosed(CefRefPtr<CefBrowser> browser) OVERRIDE;
-		void OnBrowserAllClosed() OVERRIDE;
-		void OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url) OVERRIDE;
-		void OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title) OVERRIDE;
-		void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) OVERRIDE;
-		void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) OVERRIDE;
-		void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) OVERRIDE;
-		void OnNewTab(CefRefPtr<CefBrowser> browser, const CefString& url) OVERRIDE;
+		void OnBrowserCreated(CefRefPtr<CefBrowser> browser) override;
+		void OnBrowserClosed(CefRefPtr<CefBrowser> browser) override;
+		void OnBrowserAllClosed() override;
+		void OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url) override;
+		void OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title) override;
+		void OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen) override;
+		void OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward) override;
+		void OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions) override;
+		void OnNewTab(CefRefPtr<CefBrowser> browser, const CefString& url) override;
 		void NotifyDestroyedIfDone();
 
 	private:
@@ -84,6 +85,8 @@ namespace Browser
 	private:
 		void CreateBrowserWindow(const CefString& startup_url);
 		void CreateBrowserDlg(const CefBrowserSettings& settings);
+		void HandleTabClose(const DuiLib::CDuiString& sCtrlName);
+		void AddNewTab(int nBrowserId, const DuiLib::CDuiString& sUrl);
 
 		HWND m_hParent;
 		bool m_bWithControls;
@@ -95,7 +98,7 @@ namespace Browser
 		int m_nCurBrowserId;
 		BrowserDlg::Delegate* m_Delegate;
 		Browser::BrowserUI* m_pBrowserUI;
-		scoped_ptr<Browser::BrowserWindow> m_BrowserCtrl;
+		std::unique_ptr<Browser::BrowserWindow> m_BrowserCtrl;
 	};
 }
 #endif

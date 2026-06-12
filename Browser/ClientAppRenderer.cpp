@@ -11,13 +11,6 @@ namespace Browser
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// CefRenderProcessHandler methods.
-	void ClientAppRenderer::OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info)
-	{
-		DelegateSet::iterator it = m_delegates.begin();
-		for (; it != m_delegates.end(); ++it)
-			(*it)->OnRenderThreadCreated(this, extra_info);
-	}
-
 	void ClientAppRenderer::OnWebKitInitialized()
 	{
 		DelegateSet::iterator it = m_delegates.begin();
@@ -25,7 +18,7 @@ namespace Browser
 			(*it)->OnWebKitInitialized(this);
 	}
 
-	void ClientAppRenderer::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
+	void ClientAppRenderer::OnBrowserCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDictionaryValue> extra_info)
 	{
 		DelegateSet::iterator it = m_delegates.begin();
 		for (; it != m_delegates.end(); ++it)
@@ -88,6 +81,7 @@ namespace Browser
 
 	bool ClientAppRenderer::OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message)
 	{
@@ -97,13 +91,12 @@ namespace Browser
 
 		DelegateSet::iterator it = m_delegates.begin();
 		for (; it != m_delegates.end() && !handled; ++it) {
-			handled = (*it)->OnProcessMessageReceived(this, browser, source_process,message);
+			handled = (*it)->OnProcessMessageReceived(this, browser, frame, source_process, message);
 		}
 
 		return handled;
 	}
 
-	// static
 	void ClientAppRenderer::CreateDelegates(DelegateSet& delegates) {
 		Renderer::CreateDelegates(delegates);
 		PerfTest::CreateDelegates(delegates);

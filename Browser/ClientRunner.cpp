@@ -5,7 +5,7 @@
 #include "include/cef_parser.h"
 #include "include/cef_task.h"
 #include "include/cef_trace.h"
-#include "include/cef_web_plugin.h"
+
 #include "include/wrapper/cef_stream_resource_handler.h"
 #include "ClientApp.h"
 #include "ResourceUtil.h"
@@ -105,7 +105,7 @@ namespace Browser
 				CASE(ERR_ADDRESS_UNREACHABLE);
 				CASE(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 				CASE(ERR_TUNNEL_CONNECTION_FAILED);
-				CASE(ERR_NO_SSL_VERSIONS_ENABLED);
+				
 				CASE(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 				CASE(ERR_SSL_RENEGOTIATION_REQUESTED);
 				CASE(ERR_CERT_COMMON_NAME_INVALID);
@@ -139,14 +139,14 @@ namespace Browser
 		void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
 			if (!CefCurrentlyOn(TID_IO)) {
 				// Execute on the browser IO thread.
-				CefPostTask(TID_IO, base::Bind(SetupResourceManager, resource_manager));
+				CefPostTask(TID_IO, base::BindRepeating(&SetupResourceManager, resource_manager));
 				return;
 			}
 
 			const std::string& test_origin = kTestOrigin;
 
 			// Add the URL filter.
-			resource_manager->SetUrlFilter(base::Bind(RequestUrlFilter));
+			resource_manager->SetUrlFilter(base::BindRepeating(&RequestUrlFilter));
 
 			// Add provider for bundled resource files.
 			// Read resources from the binary.
@@ -175,12 +175,12 @@ namespace Browser
 				BindingHandler() {}
 
 				// Called due to cefQuery execution in binding.html.
-				virtual bool OnQuery(CefRefPtr<CefBrowser> browser,
+				bool OnQuery(CefRefPtr<CefBrowser> browser,
 					CefRefPtr<CefFrame> frame,
-					int64 query_id,
+					int64_t query_id,
 					const CefString& request,
 					bool persistent,
-					CefRefPtr<Callback> callback) OVERRIDE
+					CefRefPtr<CefMessageRouterBrowserSide::Callback> callback) override
 				{
 					// Only handle messages from the test URL.
 					const std::string& url = frame->GetURL();

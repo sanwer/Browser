@@ -2,17 +2,59 @@
 #include "BrowserDlg.h"
 #include "MainContext.h"
 #include "BrowserDlgManager.h"
+#include "TempWindow.h"
+#include "BrowserUI.h"
 
 namespace Browser
 {
-	namespace {
-		const int FrameLeft = 2;
-		const int FrameTop = 1;
-		const int FrameRight = 2;
-		const int FrameBottom = 2;
-		const int TitleHeight = 32;
-		const int ToolbarHeight = 28;
-	}
+	const int FrameLeft = 2;
+	const int FrameTop = 1;
+	const int FrameRight = 2;
+	const int FrameBottom = 2;
+	const int TitleHeight = 32;
+	const int ToolbarHeight = 28;
+
+	const int TabHeight = 30;
+	const int TabMinWidth = 100;
+	const int TabMaxWidth = 256;
+	const int TabCloseWidth = 26;
+	const int TabCloseHeight = 28;
+	const int TabTextPaddingLeft = 5;
+	const int TabTextPaddingTop = 1;
+	const int TabTextPaddingRight = 20;
+	const int TabTextPaddingBottom = 2;
+	const int TabCloseDestLeft = 8;
+	const int TabCloseDestTop = 8;
+	const int TabCloseDestRight = 19;
+	const int TabCloseDestBottom = 19;
+	const int TabBorderRound = 2;
+
+	const LPCTSTR TabBkColor = _T("FF1587D8");
+	const LPCTSTR TabSelectedBkColor = _T("FF3498DB");
+	const LPCTSTR TabTextColor = _T("FFFFFFFF");
+
+	const LPCTSTR CtrlNameUiTabs = _T("uiTabs");
+	const LPCTSTR CtrlNameTabNew = _T("tabNew");
+	const LPCTSTR CtrlNameUiToolbar = _T("uiToolbar");
+	const LPCTSTR CtrlNameBtnBackward = _T("btnBackward");
+	const LPCTSTR CtrlNameBtnForward = _T("btnForward");
+	const LPCTSTR CtrlNameBtnGoto = _T("btnGoto");
+	const LPCTSTR CtrlNameBtnSearch = _T("btnSearch");
+	const LPCTSTR CtrlNameBtnHome = _T("btnHome");
+	const LPCTSTR CtrlNameBtnSettings = _T("btnSettings");
+	const LPCTSTR CtrlNameEditUrl = _T("editUrl");
+	const LPCTSTR CtrlNameEditKeyword = _T("editKeyword");
+	const LPCTSTR CtrlClassBrowserUI = _T("BrowserUI");
+	const LPCTSTR CtrlClassTitle = _T("Title");
+	const LPCTSTR CtrlClassButtonUI = _T("ButtonUI");
+	const LPCTSTR CtrlGroupNameTitles = _T("Titles");
+
+	const LPCTSTR UrlBlank = _T("about:blank");
+	const LPCTSTR UrlSettings = _T("about:settings");
+	const LPCTSTR UrlSearchFormat = _T("https://www.baidu.com/s?wd=%s");
+
+	const LPCTSTR SkinFileBrowserDlg = _T("BrowserDlg.xml");
+	const LPCTSTR ImageTabClose = _T("btnTabClose.png");
 
 	BrowserDlg::BrowserDlg()
 		: m_Delegate(NULL),
@@ -51,47 +93,46 @@ namespace Browser
 	void BrowserDlg::InitWindow()
 	{
 		SetIcon(IDR_MAINFRAME);
-		uiTabs = static_cast<DuiLib::CHorizontalLayoutUI*>(m_Manager.FindControl(_T("uiTabs")));
-		tabNew = static_cast<DuiLib::CButtonUI*>(m_Manager.FindControl(_T("tabNew")));
-		uiToolbar = static_cast<DuiLib::CControlUI*>(m_Manager.FindControl(_T("uiToolbar")));
-		btnBackward = static_cast<DuiLib::CButtonUI*>(m_Manager.FindControl(_T("btnBackward")));
-		btnForward = static_cast<DuiLib::CButtonUI*>(m_Manager.FindControl(_T("btnForward")));
-		editUrl = static_cast<DuiLib::CEditUI*>(m_Manager.FindControl(_T("editUrl")));
-		editKeyword = static_cast<DuiLib::CEditUI*>(m_Manager.FindControl(_T("editKeyword")));
+		uiTabs = static_cast<DuiLib::CHorizontalLayoutUI*>(m_pm.FindControl(CtrlNameUiTabs));
+		tabNew = static_cast<DuiLib::CButtonUI*>(m_pm.FindControl(CtrlNameTabNew));
+		uiToolbar = static_cast<DuiLib::CControlUI*>(m_pm.FindControl(CtrlNameUiToolbar));
+		btnBackward = static_cast<DuiLib::CButtonUI*>(m_pm.FindControl(CtrlNameBtnBackward));
+		btnForward = static_cast<DuiLib::CButtonUI*>(m_pm.FindControl(CtrlNameBtnForward));
+		editUrl = static_cast<DuiLib::CEditUI*>(m_pm.FindControl(CtrlNameEditUrl));
+		editKeyword = static_cast<DuiLib::CEditUI*>(m_pm.FindControl(CtrlNameEditKeyword));
+		
 		if (uiTabs == NULL || tabNew == NULL || uiToolbar == NULL || editUrl == NULL || editKeyword == NULL)
 		{
-			MessageBox(NULL,_T("加载资源文件失败"),_T("Browser"),MB_OK|MB_ICONERROR);
+			MessageBox(NULL, _T("Failed to load resource file"), _T("Browser"), MB_OK | MB_ICONERROR);
 			return;
 		}
 		
 		if (m_bWithControls) {
 			uiToolbar->SetVisible(true);
-			if(btnBackward)
+			if (btnBackward)
 				btnBackward->SetEnabled(false);
-			if(btnForward)
+			if (btnForward)
 				btnForward->SetEnabled(false);
-		}else{
+		} else {
 			uiToolbar->SetVisible(false);
 		}
+		
+		tabNew->SetVisible(!m_bIsPopup);
 		if (m_bIsPopup) {
-			tabNew->SetVisible(false);
 			uiToolbar->SetVisible(false);
-		} else {
-			tabNew->SetVisible(true);
 		}
 	}
 
 	void BrowserDlg::OnFinalMessage(HWND hWnd)
 	{
 		WindowImplBase::OnFinalMessage(hWnd);
-		//delete this;
 		m_bWindowDestroyed = true;
 		NotifyDestroyedIfDone();
 	}
 
 	DuiLib::CDuiString BrowserDlg::GetSkinFile()
 	{
-		return _T("BrowserDlg.xml");
+		return SkinFileBrowserDlg;
 	}
 
 	LRESULT BrowserDlg::ResponseDefaultKeyEvent(WPARAM wParam)
@@ -110,17 +151,17 @@ namespace Browser
 	DuiLib::CControlUI* BrowserDlg::CreateControl(LPCTSTR pstrClass)
 	{
 		DuiLib::CControlUI* pUI = NULL;
-		if (_tcsicmp(pstrClass, _T("BrowserUI")) == 0)
+		if (_tcsicmp(pstrClass, CtrlClassBrowserUI) == 0)
 		{
-			if(m_pBrowserUI == NULL){
+			if (m_pBrowserUI == NULL) {
 				m_pBrowserUI = new Browser::BrowserUI(this, m_hWnd);
 			}
-			if (m_pBrowserUI != NULL && m_BrowserCtrl.get() != NULL){
+			if (m_pBrowserUI != NULL && m_BrowserCtrl.get() != NULL) {
 				m_pBrowserUI->SetCtrl(m_BrowserCtrl.get());
 			}
 			pUI = m_pBrowserUI;
 		}
-		else if (_tcsicmp(pstrClass, _T("Title")) == 0)
+		else if (_tcsicmp(pstrClass, CtrlClassTitle) == 0)
 		{
 			pUI = new Browser::TitleUI();
 		}
@@ -133,7 +174,7 @@ namespace Browser
 		switch( uMsg )
 		{
 		case WM_CLOSE:
-			if(wParam == 0L)
+			if (wParam == 0L)
 				return 0L;
 			break;
 		default:
@@ -146,88 +187,61 @@ namespace Browser
 	{
 		DuiLib::CDuiString sCtrlName = msg.pSender->GetName();
 
-		if (_tcsicmp(msg.sType,_T("click")) == 0)
+		if (_tcsicmp(msg.sType, _T("click")) == 0)
 		{
-			if (_tcsicmp(sCtrlName,_T("btnGoto")) == 0){//跳转
+			if (_tcsicmp(sCtrlName, CtrlNameBtnGoto) == 0) {
 				DuiLib::CDuiString sUrl = editUrl->GetText();
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
-			}else if (_tcsicmp(sCtrlName,_T("btnSearch")) == 0){//搜索
-				DuiLib::CDuiString sUrl,sKeyword = editKeyword->GetText();
-				sUrl.Format(_T("https://www.baidu.com/s?wd=%s"),sKeyword.GetData());
+			} else if (_tcsicmp(sCtrlName, CtrlNameBtnSearch) == 0) {
+				DuiLib::CDuiString sUrl, sKeyword = editKeyword->GetText();
+				sUrl.Format(UrlSearchFormat, sKeyword.GetData());
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
-			}else if (_tcsicmp(sCtrlName,_T("btnHome")) == 0){//主页
+			} else if (_tcsicmp(sCtrlName, CtrlNameBtnHome) == 0) {
 				editUrl->SetText(MainContext::Get()->GetMainURL().c_str());
 				LoadURL(MainContext::Get()->GetMainURL().c_str());
-			}else if (_tcsicmp(sCtrlName,_T("btnSettings")) == 0){
-				DuiLib::CDuiString sUrl = _T("about:settings");
+			} else if (_tcsicmp(sCtrlName, CtrlNameBtnSettings) == 0) {
+				DuiLib::CDuiString sUrl = UrlSettings;
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
-			}else if (_tcsicmp(sCtrlName,_T("btnBackward")) == 0){
+			} else if (_tcsicmp(sCtrlName, CtrlNameBtnBackward) == 0) {
 				CefRefPtr<CefBrowser> browser = GetBrowser();
 				if (browser) {
 					browser->GoBack();
 				}
-			}else if (_tcsicmp(sCtrlName,_T("btnForward")) == 0){
+			} else if (_tcsicmp(sCtrlName, CtrlNameBtnForward) == 0) {
 				CefRefPtr<CefBrowser> browser = GetBrowser();
 				if (browser) {
 					browser->GoForward();
 				}
-			}else if (_tcsicmp(sCtrlName,_T("tabNew")) == 0){
-				NewTab(L"about:blank");
-			}else if (_tcsnicmp(sCtrlName,_T("tabClose"),8) == 0){
-				CDuiString sBuffer = sCtrlName;
-				sBuffer.Replace(_T("tabClose"),_T(""));
-				int nBrowserId = _ttoi(sBuffer.GetData());
-				sBuffer.Format(_T("tabTitle%d"),nBrowserId);
-				int nTabsCount = uiTabs->GetCount();
-				for (int idx = 0; idx < nTabsCount; idx++)
-				{
-					TitleUI* pItem = (TitleUI*)uiTabs->GetItemAt(idx);
-					if (pItem != NULL){
-						if(nTabsCount <= 2){
-							LoadURL(L"about:blank");
-						}else{
-							if(pItem->GetTag() == nBrowserId){
-								TitleUI* pTitle;
-								if(idx > 0){
-									pTitle = (TitleUI*)uiTabs->GetItemAt(idx-1);
-								}else{
-									pTitle = (TitleUI*)uiTabs->GetItemAt(idx+1);
-								}
-								uiTabs->Remove(pItem);
-								pTitle->Selected(true);
-								if (m_pBrowserUI){
-									m_pBrowserUI->CloseBrowser(nBrowserId);
-								}
-							}
-						}
-					}
-				}
+			} else if (_tcsicmp(sCtrlName, CtrlNameTabNew) == 0) {
+				NewTab(UrlBlank);
+			} else if (_tcsnicmp(sCtrlName, _T("tabClose"), 8) == 0) {
+				HandleTabClose(sCtrlName);
 			}
 		}
-		else if (_tcsicmp(msg.sType,DUI_MSGTYPE_RETURN) == 0)
+		else if (_tcsicmp(msg.sType, DUI_MSGTYPE_RETURN) == 0)
 		{
-			if (_tcsicmp(sCtrlName,_T("editUrl")) == 0){
+			if (_tcsicmp(sCtrlName, CtrlNameEditUrl) == 0) {
 				DuiLib::CDuiString sUrl = editUrl->GetText();
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
-			}else if (_tcsicmp(sCtrlName,_T("editKeyword")) == 0){
-				DuiLib::CDuiString sUrl,sKeyword = editKeyword->GetText();
-				sUrl.Format(_T("https://www.baidu.com/s?wd=%s"),sKeyword.GetData());
+			} else if (_tcsicmp(sCtrlName, CtrlNameEditKeyword) == 0) {
+				DuiLib::CDuiString sUrl, sKeyword = editKeyword->GetText();
+				sUrl.Format(UrlSearchFormat, sKeyword.GetData());
 				editUrl->SetText(sUrl);
 				LoadURL(sUrl.GetData());
 			}
 		}
-		else if (_tcsicmp(msg.sType,DUI_MSGTYPE_SELECTCHANGED) == 0)
+		else if (_tcsicmp(msg.sType, DUI_MSGTYPE_SELECTCHANGED) == 0)
 		{
-			if (_tcsnicmp(sCtrlName,_T("tabTitle"),8) == 0){
+			if (_tcsnicmp(sCtrlName, _T("tabTitle"), 8) == 0) {
 				CDuiString sBuffer = msg.pSender->GetText();
 				SetWindowText(m_hWnd, sBuffer.GetData());
 				sBuffer = msg.pSender->GetUserData();
 				editUrl->SetText(sBuffer.GetData());
-				if (m_pBrowserUI){
+				if (m_pBrowserUI) {
 					m_nCurBrowserId = msg.pSender->GetTag();
 					m_pBrowserUI->ShowBrowser(m_nCurBrowserId);
 				}
@@ -236,25 +250,52 @@ namespace Browser
 		return WindowImplBase::Notify(msg);
 	}
 
+	void BrowserDlg::HandleTabClose(const DuiLib::CDuiString& sCtrlName)
+	{
+		DuiLib::CDuiString sBuffer = sCtrlName;
+		sBuffer.Replace(_T("tabClose"), _T(""));
+		int nBrowserId = _ttoi(sBuffer.GetData());
+		
+		int nTabsCount = uiTabs->GetCount();
+		if (nTabsCount <= 2) {
+			LoadURL(UrlBlank);
+			return;
+		}
+
+		for (int idx = 0; idx < nTabsCount; idx++)
+		{
+			TitleUI* pItem = (TitleUI*)uiTabs->GetItemAt(idx);
+			if (pItem != NULL && pItem->GetTag() == nBrowserId) {
+				TitleUI* pTitle = (idx > 0) ? 
+					(TitleUI*)uiTabs->GetItemAt(idx - 1) : 
+					(TitleUI*)uiTabs->GetItemAt(idx + 1);
+				
+				uiTabs->Remove(pItem);
+				pTitle->Selected(true);
+				
+				if (m_pBrowserUI) {
+					m_pBrowserUI->CloseBrowser(nBrowserId);
+				}
+				break;
+			}
+		}
+	}
+
 	void BrowserDlg::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 	{
 		DCHECK(CefCurrentlyOn(TID_UI));
 		
 		int nBrowserId = browser->GetIdentifier();
-		if(m_nCurBrowserId != nBrowserId){
+		if (m_nCurBrowserId != nBrowserId) {
 			m_nCurBrowserId = nBrowserId;
 		}
 
 		if (m_bIsPopup) {
-			// For popup browsers create the root window once the browser has been created.
 			CreateBrowserDlg(CefBrowserSettings());
-		} else {
-			if (m_pBrowserUI){
-				RECT rcPos = m_pBrowserUI->GetPos();
-				if(m_BrowserCtrl){
-					m_BrowserCtrl->ShowBrowser(m_nCurBrowserId,rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
-				}
-			}
+		} else if (m_pBrowserUI && m_BrowserCtrl) {
+			RECT rcPos = m_pBrowserUI->GetPos();
+			m_BrowserCtrl->ShowBrowser(m_nCurBrowserId, rcPos.left, rcPos.top, 
+				rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
 		}
 	}
 
@@ -283,84 +324,111 @@ namespace Browser
 	void BrowserDlg::OnSetAddress(CefRefPtr<CefBrowser> browser, const CefString& url)
 	{
 		DCHECK(CefCurrentlyOn(TID_UI));
-		CDuiString sBuffer;
+		
 		CDuiString sUrl;
 		bool bAddTab = true;
 		int nTabsCount = uiTabs->GetCount();
 		int nBrowserId = browser->GetIdentifier();
-		if(url.length() > 0)
-			sUrl = url.c_str();
+		
+		if (url.length() > 0) {
+			sUrl = CefString(url).ToWString().c_str();
+		}
+
 		for (int idx = 0; idx < nTabsCount; idx++)
 		{
 			DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
-			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
+			if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), CtrlClassButtonUI) == 0) {
 				continue;
-			if (pTitle->GetTag() == nBrowserId){
+			}
+			if (pTitle->GetTag() == nBrowserId) {
 				bAddTab = false;
 				pTitle->SetUserData(sUrl);
 				CDuiString sBuffer = pTitle->GetText();
-				if(sBuffer.GetLength() == 0)
+				if (sBuffer.GetLength() == 0) {
 					pTitle->SetText(sUrl);
+				}
 				break;
 			}
 		}
+
 		if (nBrowserId == m_nCurBrowserId) {
 			editUrl->SetText(sUrl);
 		}
-		if(bAddTab){
-			if(m_bIsPopup){
-				if(pTitle == NULL){
-					pTitle = new CLabelUI;
-				}
-				pTitle->SetText(sUrl);
-				uiTabs->AddAt(pTitle, nTabsCount - 1);
-				sBuffer.Format(_T("name=\"labTitle\" height=\"30\" floatalign=\"right\" textpadding=\"5,1,20,2\" textcolor=\"FFFFFFFF\""));
-				pTitle->ApplyAttributeList(sBuffer);
-			}else{
-				TitleUI* pTitle = new TitleUI;
-				pTitle->SetTag(nBrowserId);
-				pTitle->SetUserData(sUrl);
-				uiTabs->AddAt(pTitle, nTabsCount - 1);
-				m_nCurBrowserId = nBrowserId;
-				sBuffer.Format(_T("name=\"tabTitle%d\" height=\"30\" minwidth=\"100\" maxwidth=\"256\" floatalign=\"right\" borderround=\"2,2\" textpadding=\"5,1,20,2\" bkcolor=\"FF1587D8\" selectedbkcolor=\"FF3498DB\" textcolor=\"FFFFFFFF\" selectedtextcolor=\"FFFFFFFF\" group=\"Titles\""), nBrowserId);
-				pTitle->ApplyAttributeList(sBuffer);
-				CControlUI* pControl = new CControlUI;
-				CButtonUI* pClose = new CButtonUI;
-				pTitle->Add(pControl);
-				pTitle->Add(pClose);
-				sBuffer.Format(_T("name=\"tabClose%d\" width=\"26\" height=\"28\" floatalign=\"right\" normalimage=\"file='btnTabClose.png' source='0,0,11,11' dest='8,8,19,19'\" hotimage=\"file='btnTabClose.png' source='11,0,22,11' dest='8,8,19,19'\" pushedimage=\"file='btnTabClose.png' source='22,0,33,11' dest='8,8,19,19'\""), nBrowserId);
-				pClose->ApplyAttributeList(sBuffer);
-				pTitle->Selected(true);
-				editUrl->SetText(sUrl);
+
+		if (bAddTab) {
+			AddNewTab(nBrowserId, sUrl);
+		}
+	}
+
+	void BrowserDlg::AddNewTab(int nBrowserId, const DuiLib::CDuiString& sUrl)
+	{
+		if (m_bIsPopup) {
+			if (pTitle == NULL) {
+				pTitle = new DuiLib::CLabelUI;
 			}
+			pTitle->SetText(sUrl);
+			uiTabs->AddAt(pTitle, uiTabs->GetCount() - 1);
+			DuiLib::CDuiString sBuffer;
+			sBuffer.Format(_T("name=\"labTitle\" height=\"%d\" floatalign=\"right\" textpadding=\"%d,%d,%d,%d\" textcolor=\"%s\""), 
+				TabHeight, TabTextPaddingLeft, TabTextPaddingTop, TabTextPaddingRight, TabTextPaddingBottom, TabTextColor);
+			pTitle->ApplyAttributeList(sBuffer);
+		} else {
+			TitleUI* pTitle = new TitleUI;
+			pTitle->SetTag(nBrowserId);
+			pTitle->SetUserData(sUrl);
+			uiTabs->AddAt(pTitle, uiTabs->GetCount() - 1);
+			m_nCurBrowserId = nBrowserId;
+			
+			DuiLib::CDuiString sBuffer;
+			sBuffer.Format(_T("name=\"tabTitle%d\" height=\"%d\" minwidth=\"%d\" maxwidth=\"%d\" floatalign=\"right\" borderround=\"%d,%d\" textpadding=\"%d,%d,%d,%d\" bkcolor=\"%s\" selectedbkcolor=\"%s\" textcolor=\"%s\" selectedtextcolor=\"%s\" group=\"%s\""), 
+				nBrowserId, TabHeight, TabMinWidth, TabMaxWidth, TabBorderRound, TabBorderRound,
+				TabTextPaddingLeft, TabTextPaddingTop, TabTextPaddingRight, TabTextPaddingBottom,
+				TabBkColor, TabSelectedBkColor, TabTextColor, TabTextColor, CtrlGroupNameTitles);
+			pTitle->ApplyAttributeList(sBuffer);
+
+			DuiLib::CControlUI* pControl = new DuiLib::CControlUI;
+			DuiLib::CButtonUI* pClose = new DuiLib::CButtonUI;
+			pTitle->Add(pControl);
+			pTitle->Add(pClose);
+
+			sBuffer.Format(_T("name=\"tabClose%d\" width=\"%d\" height=\"%d\" floatalign=\"right\" normalimage=\"file='%s' source='0,0,11,11' dest='%d,%d,%d,%d'\" hotimage=\"file='%s' source='11,0,22,11' dest='%d,%d,%d,%d'\" pushedimage=\"file='%s' source='22,0,33,11' dest='%d,%d,%d,%d'\""), 
+				nBrowserId, TabCloseWidth, TabCloseHeight, ImageTabClose,
+				TabCloseDestLeft, TabCloseDestTop, TabCloseDestRight, TabCloseDestBottom,
+				ImageTabClose, TabCloseDestLeft, TabCloseDestTop, TabCloseDestRight, TabCloseDestBottom,
+				ImageTabClose, TabCloseDestLeft, TabCloseDestTop, TabCloseDestRight, TabCloseDestBottom);
+			pClose->ApplyAttributeList(sBuffer);
+
+			pTitle->Selected(true);
+			editUrl->SetText(sUrl);
 		}
 	}
 
 	void BrowserDlg::OnSetTitle(CefRefPtr<CefBrowser> browser, const CefString& title)
 	{
 		DCHECK(CefCurrentlyOn(TID_UI));
+		
 		CDuiString sTitle;
-		bool bAddTab = true;
-		int nTabsCount = uiTabs->GetCount();
 		int nBrowserId = browser->GetIdentifier();
-		if(title.length() > 0)
-			sTitle = title.c_str();
+		
+		if (title.length() > 0) {
+			sTitle = CefString(title).ToWString().c_str();
+		}
 
-		if(m_bIsPopup){
-			if(pTitle == NULL){
+		if (m_bIsPopup) {
+			if (pTitle == NULL) {
 				pTitle = new CLabelUI;
 			}
 			pTitle->SetText(sTitle);
 			SetWindowText(m_hWnd, sTitle);
-		}else{
+		} else {
 			int nTabsCount = uiTabs->GetCount();
-			int nBrowserId = browser->GetIdentifier();
 			for (int idx = 0; idx < nTabsCount; idx++)
 			{
 				DuiLib::CControlUI* pTitle = (DuiLib::CControlUI*)uiTabs->GetItemAt(idx);
-				if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), _T("ButtonUI")) == 0)
+				if (pTitle == NULL || _tcsicmp(pTitle->GetClass(), CtrlClassButtonUI) == 0) {
 					continue;
-				if (pTitle->GetTag() == nBrowserId){
+				}
+				if (pTitle->GetTag() == nBrowserId) {
 					pTitle->SetText(sTitle);
 				}
 			}
@@ -368,7 +436,6 @@ namespace Browser
 				SetWindowText(m_hWnd, sTitle);
 			}
 		}
-
 	}
 
 	void BrowserDlg::OnSetFullscreen(CefRefPtr<CefBrowser> browser, bool fullscreen)
@@ -376,13 +443,15 @@ namespace Browser
 		DCHECK(CefCurrentlyOn(TID_UI));
 	}
 
-	void BrowserDlg::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading,bool canGoBack,bool canGoForward)
+	void BrowserDlg::OnSetLoadingState(CefRefPtr<CefBrowser> browser, bool isLoading, bool canGoBack, bool canGoForward)
 	{
 		DCHECK(CefCurrentlyOn(TID_UI));
-		if(btnBackward)
+		if (btnBackward) {
 			btnBackward->SetEnabled(canGoBack);
-		if(btnForward)
+		}
+		if (btnForward) {
 			btnForward->SetEnabled(canGoForward);
+		}
 	}
 
 	void BrowserDlg::OnSetDraggableRegions(CefRefPtr<CefBrowser> browser, const std::vector<CefDraggableRegion>& regions)
@@ -397,8 +466,9 @@ namespace Browser
 
 	void BrowserDlg::NotifyDestroyedIfDone() {
 		// Notify once both the window and the browser have been destroyed.
-		if (m_bWindowDestroyed && m_bBrowserDestroyed)
+		if (m_bWindowDestroyed && m_bBrowserDestroyed && m_Delegate) {
 			m_Delegate->OnBrowserDlgDestroyed(this);
+		}
 	}
 
 	void BrowserDlg::Init(
@@ -429,7 +499,7 @@ namespace Browser
 		if (CefCurrentlyOn(TID_UI)) {
 			CreateBrowserDlg(settings);
 		} else {
-			CefPostTask(TID_UI, CefCreateClosureTask(base::Bind(&BrowserDlg::CreateBrowserDlg, this, settings)));
+			CefPostTask(TID_UI, base::BindRepeating(&BrowserDlg::CreateBrowserDlg, this, settings));
 		}
 	}
 
@@ -460,12 +530,12 @@ namespace Browser
 		// The new popup is initially parented to a temporary window. The native root
 		// window will be created after the browser is created and the popup window
 		// will be re-parented to it at that time.
-		m_BrowserCtrl->GetPopupConfig(TempWindow::GetWindowHandle(),windowInfo, client, settings);
+		m_BrowserCtrl->GetPopupConfig(TempWindow::GetWindowHandle(), windowInfo, client, settings);
 	}
 
 	void BrowserDlg::NewTab(const CefString& url)
 	{
-		if(m_BrowserCtrl && m_pBrowserUI && url.length() > 0){
+		if (m_BrowserCtrl && m_pBrowserUI && !url.empty()) {
 			RECT rcPos = m_pBrowserUI->GetPos();
 			CefRect cef_rect(rcPos.left, rcPos.top, rcPos.right - rcPos.left, rcPos.bottom - rcPos.top);
 			CefBrowserSettings settings;
@@ -478,9 +548,10 @@ namespace Browser
 	{
 		DCHECK(CefCurrentlyOn(TID_UI));
 
-		if (m_BrowserCtrl)
+		if (m_BrowserCtrl) {
 			return m_BrowserCtrl->GetBrowser(m_nCurBrowserId);
-		return NULL;
+		}
+		return nullptr;
 	}
 
 	CefWindowHandle BrowserDlg::GetWindowHandle()
@@ -490,11 +561,11 @@ namespace Browser
 
 	void BrowserDlg::LoadURL(const CefString& url)
 	{
-		if (m_BrowserCtrl.get() != NULL){
+		if (m_BrowserCtrl.get() != NULL) {
 			CefRefPtr<CefBrowser> pBrowser = m_BrowserCtrl->GetBrowser(m_nCurBrowserId);
-			if(pBrowser){
+			if (pBrowser) {
 				CefRefPtr<CefFrame> pFrame = pBrowser->GetMainFrame();
-				if (pFrame){
+				if (pFrame) {
 					pFrame->LoadURL(url);
 				}
 			}
@@ -516,10 +587,10 @@ namespace Browser
 			x = y = width = height = CW_USEDEFAULT;
 		} else {
 			RECT rcWindow = m_rcStart;
-			if (m_bWithControls){
+			if (m_bWithControls) {
 				rcWindow.bottom += FrameTop + TitleHeight + FrameBottom;
 				rcWindow.right += FrameLeft + FrameRight;
-				if (!m_bIsPopup){
+				if (!m_bIsPopup) {
 					rcWindow.bottom += ToolbarHeight;
 				}
 			}
@@ -530,18 +601,20 @@ namespace Browser
 		}
 
 		// Create the main window.
-		Create(m_hParent,_T("Browser"),UI_WNDSTYLE_FRAME|WS_CLIPSIBLINGS|WS_CLIPCHILDREN,WS_EX_APPWINDOW,x, y, width, height,NULL);
+		Create(m_hParent, _T("Browser"), UI_WNDSTYLE_FRAME | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 
+			WS_EX_APPWINDOW, x, y, width, height, NULL);
 
 		::SetMenu(m_hWnd, NULL);
 
-		if(m_pBrowserUI){
+		if (m_pBrowserUI) {
 			RECT rect = m_pBrowserUI->GetPos();
 
-			if(m_bIsPopup){
+			if (m_bIsPopup) {
 				// With popups we already have a browser window. Parent the browser window
 				// to the root window and show it in the correct location.
-				m_BrowserCtrl->ShowPopup(m_nCurBrowserId, m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-			}else{
+				m_BrowserCtrl->ShowPopup(m_nCurBrowserId, m_hWnd, rect.left, rect.top, 
+					rect.right - rect.left, rect.bottom - rect.top);
+			} else {
 				// Create the browser window.
 				CefRect cef_rect(rect.left, rect.top,
 					rect.right - rect.left,
